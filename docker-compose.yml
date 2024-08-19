@@ -1,0 +1,7 @@
+services:
+  paste:
+    environment:
+      URL: "localhost:58080"
+    build: .
+    ports:
+      - "58080:8080"

@@ -10,10 +10,11 @@ import (
 )
 
 const (
-	url      = "localhost"
 	port     = ":8080"
 	filesDir = "./files"
 )
+
+var url string = os.Getenv("URL")
 
 func main() {
 	http.HandleFunc("/upload", uploadHandler)
@@ -54,5 +55,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error copying the file", http.StatusInternalServerError)
 	}
 
-	fmt.Fprintf(w, "http://%s%s/%d\n", url, port, time)
+	if url == "" {
+		fmt.Fprintf(w, "http://localhost%s/%d\n", port, time)
+	} else {
+		fmt.Fprintf(w, "http://%s/%d\n", url, time)
+	}
 }
