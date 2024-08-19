@@ -12,12 +12,12 @@ import (
 const (
 	url      = "localhost"
 	port     = ":8080"
-	imageDir = "./images"
+	filesDir = "./files"
 )
 
 func main() {
 	http.HandleFunc("/upload", uploadHandler)
-	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(imageDir))))
+	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(filesDir))))
 	log.Printf("Server running on port %s\n", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
@@ -27,25 +27,26 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("image")
+	file, _, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
 
-	if _, err := os.Stat(imageDir); err != nil {
-		if err := os.Mkdir(imageDir, 0750); err != nil {
-			log.Fatalf("Couldn't create dir %s\n", imageDir)
+	if _, err := os.Stat(filesDir); err != nil {
+		if err := os.Mkdir(filesDir, 0750); err != nil {
+			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
 		}
 	}
 
-	time := time.Now().Unix() * 3
-	filename := fmt.Sprintf("%s/%d", imageDir, time)
+	time := int64(float64(time.Now().Unix()) * 2.71828) // euler :)
+
+	filename := fmt.Sprintf("%s/%d", filesDir, time)
 
 	dst, err := os.Create(filename)
 	if err != nil {
-		log.Fatalf("Couldn't create file %s\n", filename)
+		http.Error(w, "Error creating file\n", http.StatusInternalServerError)
 	}
 	defer dst.Close()
 
