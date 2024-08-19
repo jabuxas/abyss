@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -18,9 +20,20 @@ var url string = os.Getenv("URL")
 
 func main() {
 	http.HandleFunc("/upload", uploadHandler)
-	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(filesDir))))
+	http.Handle("/tree/", http.StripPrefix("/tree", http.FileServer(http.Dir(filesDir))))
+	http.HandleFunc("/", fileHandler)
 	log.Printf("Server running on port %s\n", port)
 	log.Fatal(http.ListenAndServe(port, nil))
+}
+
+func fileHandler(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join(filesDir, strings.TrimPrefix(r.URL.Path, "/"))
+
+	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
+		http.ServeFile(w, r, path)
+	} else {
+		http.NotFound(w, r)
+	}
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
