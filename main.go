@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -28,7 +27,13 @@ func main() {
 }
 
 func fileHandler(w http.ResponseWriter, r *http.Request) {
-	path := filepath.Join(filesDir, strings.TrimPrefix(r.URL.Path, "/"))
+	name := filepath.Clean(r.URL.Path)
+	path := filepath.Join(filesDir, name)
+
+	if !filepath.IsLocal(path) {
+		http.Error(w, "Wrong url", http.StatusBadRequest)
+		return
+	}
 
 	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
 		http.ServeFile(w, r, path)
