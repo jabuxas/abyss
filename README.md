@@ -7,8 +7,13 @@ note: this is a project made for learning purposes, you should use other more ma
 - edit consts in `main.go` to match your needs. (for example, on my server, change `$url` so that the response will be nicely formatted)
 
 - to run it, either build with `go build -o abyss` or run it directly with:
-```
+```bash
 go run ./main.go
+```
+
+- then, simply upload your images with curl:
+```bash
+curl -X POST -F "image=@/path/to/image" http://localhost:8080/upload # default path
 ```
 ## todo:
 - add upload of logs funcionality (like 0x0.st)
