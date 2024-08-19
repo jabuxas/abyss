@@ -7,4 +7,5 @@ services:
       - "58080:8080"
     volumes:
       - ./files:/app/files
+      - ./.key:/app/.key
     restart: unless-stopped

@@ -42,6 +42,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !checkAuth(w, r) {
+		http.Error(w, "You're not authorized.", http.StatusBadRequest)
+		return
+	}
+
 	r.Body = http.MaxBytesReader(w, r.Body, maxFileSize)
 
 	file, _, err := r.FormFile("file")
@@ -76,4 +81,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "http://%s/%d\n", url, time)
 	}
+}
+
+func checkAuth(w http.ResponseWriter, r *http.Request) bool {
+	authKey, _ := os.ReadFile(".key")
+	return r.Header.Get("X-Auth")+"\n" == string(authKey)
 }
