@@ -1,5 +1,5 @@
 # abyss
-abyss is a basic http server made for uploading files (logs, images) and then sharing them to the internet
+abyss is a basic single user http server made for uploading files (logs, images) and then sharing them to the internet
 
 note: this is a project made for learning purposes, you should use other more mature projects if running in production
 
@@ -10,7 +10,8 @@ note: this is a project made for learning purposes, you should use other more ma
 - [todo list](#todo)
 
 ## running:
-- change URL env variable in to your domain. example: `URL=paste.abyss.dev`
+- change URL env variable to your end url. example: `URL=paste.abyss.dev` if you your files will be accessed through `paste.abyss.dev/name-of-file`
+- add your password (key) to `.key` in the root directory - it will be used for authentication for uploads.
 ### docker
 - to run with docker, you can use either docker compose or just straight docker.
 - then run the docker compose command:
