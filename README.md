@@ -21,6 +21,10 @@ note: this is a project made for learning purposes, you should use other more ma
 docker compose up -d # might be docker-compose depending on distro
 ```
 - dont change inside port of 8080 unless you know what you're doing
+- when updating, run with `--build` instead:
+```bash
+docker compose up --build -d
+```
 
 ### manual
 
