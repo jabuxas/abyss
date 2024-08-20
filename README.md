@@ -7,14 +7,16 @@ note: this is a project made for learning purposes, you should use other more ma
 - [running abyss](#running)
     - [installing with docker](#docker)
     - [installing manually](#manual)
+- [uploading files](#uploading)
 - [todo list](#todo)
 
 ## running:
-- change URL env variable to your end url. example: `URL=paste.abyss.dev` if you your files will be accessed through `paste.abyss.dev/name-of-file`
-- add your password (key) to `.key` in the root directory - it will be used for authentication for uploads.
+- change URL environment variable to your end url. example: `URL=paste.abyss.dev` if you your files will be accessed through `paste.abyss.dev/name-of-file`
+- add your password (key) to `.key` in the root directory of the project - it will be used for authentication for uploads.
+- add AUTH_USERNAME and AUTH_PASSWORD environment variables for access to `/tree/`
+
 ### docker
-- to run with docker, you can use either docker compose or just straight docker.
-- then run the docker compose command:
+- to run with docker, you can use docker compose:
 ```bash
 docker compose up -d # might be docker-compose depending on distro
 ```
@@ -24,15 +26,20 @@ docker compose up -d # might be docker-compose depending on distro
 
 - to run it, either build with `go build -o abyss` or run it directly with:
 ```bash
-URL="your-domain" go run ./main.go
+URL="your-domain" AUTH_USERNAME=admin AUTH_PASSWORD=admin go run ./main.go
 ```
+
+## uploading
 
 - then, simply upload your files with curl:
 ```bash
-curl -X POST -F "file=@/path/to/file" http://localhost:8080/upload # default url:port
+curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:8080/upload
 ```
 ## todo:
 - [x] add upload of logs funcionality (like 0x0.st)
 - [x] add docker easy setup
-- [ ] add db for tracking of file names
-- [ ] add file browser (like file://)
+- ~~add db for tracking of file names~~ (dont need that)
+- [x] add file browser (like file://)
+- [x] add file extension in its name
+- [x] login prompt when accessing /tree
+- [ ] add rate limits
