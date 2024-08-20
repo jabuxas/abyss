@@ -93,7 +93,7 @@ func (app *application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("file")
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
@@ -108,9 +108,11 @@ func (app *application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	time := int64(float64(time.Now().Unix()) * 2.71828) // euler :)
 
-	filename := fmt.Sprintf("%s/%d", filesDir, time)
+	filename := fmt.Sprintf("%d%s", time, filepath.Ext(handler.Filename))
 
-	dst, err := os.Create(filename)
+	filepath := fmt.Sprintf("%s/%s", filesDir, filename)
+
+	dst, err := os.Create(filepath)
 	if err != nil {
 		http.Error(w, "Error creating file\n", http.StatusInternalServerError)
 	}
@@ -121,9 +123,9 @@ func (app *application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if app.url == "" {
-		fmt.Fprintf(w, "http://localhost%s/%d\n", port, time)
+		fmt.Fprintf(w, "http://localhost%s/%s\n", port, filename)
 	} else {
-		fmt.Fprintf(w, "http://%s/%d\n", app.url, time)
+		fmt.Fprintf(w, "http://%s/%s\n", app.url, filename)
 	}
 }
 
