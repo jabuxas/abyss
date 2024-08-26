@@ -5,19 +5,13 @@ import (
 	"crypto/subtle"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 )
 
-const (
-	filesDir = "./files"
-	port     = ":8080"
-)
-
-type application struct {
+type Application struct {
 	auth struct {
 		username string
 		password string
@@ -25,49 +19,12 @@ type application struct {
 	url string
 }
 
-func main() {
-	app := new(application)
-
-	app.auth.username = os.Getenv("AUTH_USERNAME")
-	app.auth.password = os.Getenv("AUTH_PASSWORD")
-	app.url = os.Getenv("URL")
-
-	if app.auth.username == "" {
-		log.Fatal("basic auth username must be provided")
+func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		app.uploadHandler(w, r)
+		return
 	}
 
-	if app.auth.password == "" {
-		log.Fatal("basic auth password must be provided")
-	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.fileHandler)
-	mux.HandleFunc(
-		"/tree/",
-		app.basicAuth(app.treeHandler),
-	)
-	mux.HandleFunc("/upload", app.uploadHandler)
-
-	srv := &http.Server{
-		Addr:         port,
-		Handler:      mux,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 60 * time.Second,
-	}
-
-	log.Printf("starting server on %s", srv.Addr)
-
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
-}
-
-func (app *application) treeHandler(w http.ResponseWriter, r *http.Request) {
-	http.StripPrefix("/tree/", http.FileServer(http.Dir(filesDir))).ServeHTTP(w, r)
-}
-
-func (app *application) fileHandler(w http.ResponseWriter, r *http.Request) {
 	name := filepath.Clean(r.URL.Path)
 	path := filepath.Join(filesDir, name)
 
@@ -83,8 +40,13 @@ func (app *application) fileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) uploadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+func (app *Application) treeHandler(w http.ResponseWriter, r *http.Request) {
+	http.StripPrefix("/tree/", http.FileServer(http.Dir(filesDir))).ServeHTTP(w, r)
+}
+
+func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 		return
 	}
 
@@ -137,7 +99,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) bool {
 	return r.Header.Get("X-Auth")+"\n" == string(authKey)
 }
 
-func (app *application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
+func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if ok {
