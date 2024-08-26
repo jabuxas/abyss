@@ -35,10 +35,10 @@ docker compose up --build -d
 
 ### manual
 
-- to run it, either build with `go build -o abyss` or run it directly with:
+- to run it manually, build it with `go build -o abyss` and run:
 
 ```bash
-URL="your-domain" AUTH_USERNAME=admin AUTH_PASSWORD=admin go run ./main.go
+URL="your-domain" AUTH_USERNAME=admin AUTH_PASSWORD=admin ./abyss
 ```
 
 ## uploading
