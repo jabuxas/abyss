@@ -5,19 +5,24 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 const (
 	filesDir = "./files"
-	port     = ":8080"
+	port     = ":8999"
 )
 
 func main() {
 	app := new(Application)
 
+	godotenv.Load()
+
 	app.auth.username = os.Getenv("AUTH_USERNAME")
 	app.auth.password = os.Getenv("AUTH_PASSWORD")
-	app.url = os.Getenv("URL")
+	app.url = os.Getenv("ABYSS_URL")
+	app.key = os.Getenv("UPLOAD_KEY")
 
 	if app.auth.username == "" {
 		log.Fatal("basic auth username must be provided")

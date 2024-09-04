@@ -17,6 +17,7 @@ type Application struct {
 		password string
 	}
 	url string
+	key string
 }
 
 func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +51,7 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !checkAuth(w, r) {
+	if !app.checkAuth(r) {
 		http.Error(w, "You're not authorized.", http.StatusBadRequest)
 		return
 	}
@@ -91,12 +92,8 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func checkAuth(w http.ResponseWriter, r *http.Request) bool {
-	authKey, err := os.ReadFile(".key")
-	if err != nil {
-		http.Error(w, "Couldn't find your .key", http.StatusNotFound)
-	}
-	return r.Header.Get("X-Auth")+"\n" == string(authKey)
+func (app *Application) checkAuth(r *http.Request) bool {
+	return r.Header.Get("X-Auth") == string(app.key)
 }
 
 func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
