@@ -26,5 +26,6 @@ AUTH_USERNAME=$AUTH_USERNAME
 AUTH_PASSWORD=$AUTH_PASSWORD
 
 # This is the key needed to make uploads. Include it as X-Auth in curl.
+# Tip: Save it somewhere and use it in curl with \$(cat /path/to/key)
 UPLOAD_KEY=$UPLOAD_KEY
 EOF

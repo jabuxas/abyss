@@ -2,7 +2,7 @@
 
 abyss is a basic single user http server made for uploading files (logs, images) and then sharing them to the internet
 
-note: this is a project made for learning purposes, you should use other more mature projects if running in production
+note: this is a project made for learning purposes, you should use other more mature projects if running in production. probably.
 
 ## table of contents
 
@@ -10,13 +10,12 @@ note: this is a project made for learning purposes, you should use other more ma
   - [installing with docker](#docker)
   - [installing manually](#manual)
 - [uploading files](#uploading)
+- [docs](#docs)
 - [todo list](#todo)
 
 ## running:
 
-- change URL environment variable to your end url. example: `URL=paste.abyss.dev` if you your files will be accessed through `paste.abyss.dev/name-of-file`
-- add your password (key) to `.key` in the root directory of the project - it will be used for authentication for uploads.
-- add AUTH_USERNAME and AUTH_PASSWORD environment variables for access to `/tree/`
+- run `./generate_config.sh` to setup the necessary environment variables
 
 ### docker
 
@@ -26,7 +25,7 @@ note: this is a project made for learning purposes, you should use other more ma
 docker compose up -d # might be docker-compose depending on distro
 ```
 
-- dont change inside port of 8080 unless you know what you're doing
+- dont change inside port of 8999 unless you know what you're doing
 - when updating, run with `--build` instead:
 
 ```bash
@@ -38,7 +37,7 @@ docker compose up --build -d
 - to run it manually, build it with `go build -o abyss` and run:
 
 ```bash
-URL="your-domain" AUTH_USERNAME=admin AUTH_PASSWORD=admin ./abyss
+./abyss
 ```
 
 ## uploading
@@ -46,8 +45,14 @@ URL="your-domain" AUTH_USERNAME=admin AUTH_PASSWORD=admin ./abyss
 - then, simply upload your files with curl:
 
 ```bash
-curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:8080/
+curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:8999/
 ```
+
+## docs
+
+- `ABYSS_URL`: this is used for the correct formatting of the response of `curl`.
+- `AUTH_USERNAME | AUTH_PASSWORD`: this is used to access `http://localhost:8999/tree`, which shows all uploaded files
+- `UPLOAD_KEY`: this is key checked when uploading files. if the key doesn't match with server's one, then it refuses uploading.
 
 ## todo:
 
