@@ -1,13 +1,10 @@
 services:
   paste:
-    environment:
-      URL: "localhost:58080"
-      AUTH_USERNAME: "admin"
-      AUTH_PASSWORD: "admin"
     build: .
     ports:
-      - "58080:8080"
+      - "58080:8999"
     volumes:
       - ./files:/app/files
-      - ./.key:/app/.key
     restart: unless-stopped
+    env_file:
+      - .env
