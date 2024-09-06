@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.23 AS builder
 
 WORKDIR /app
 
@@ -10,5 +10,9 @@ RUN go mod download
 COPY *.go ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /abyss
+
+FROM scratch
+
+COPY --from=builder /abyss /abyss
 
 CMD ["/abyss"]
