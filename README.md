@@ -19,7 +19,7 @@ note: this is a project made for learning purposes, you should use other more ma
 
 ### docker
 
-- to run with docker, you can use docker compose:
+- to run with docker, you can use the `docker-compose.yml` file available in this repo. to do so, run:
 
 ```bash
 docker compose up -d # might be docker-compose depending on distro
