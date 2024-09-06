@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 echo "Press enter to use the default value '[value]' or use a custom value"
 
 read -p "Server domain name - this is the end url of where abyss will be hosted []: " -e ABYSS_URL
