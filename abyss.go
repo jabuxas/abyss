@@ -2,16 +2,12 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/joho/godotenv"
-)
-
-const (
-	filesDir = "./files"
-	port     = ":8999"
 )
 
 func main() {
@@ -23,6 +19,8 @@ func main() {
 	app.auth.password = os.Getenv("AUTH_PASSWORD")
 	app.url = os.Getenv("ABYSS_URL")
 	app.key = os.Getenv("UPLOAD_KEY")
+	app.filesDir = os.Getenv("ABYSS_FILEDIR")
+	app.port = os.Getenv("ABYSS_PORT")
 
 	if app.auth.username == "" {
 		log.Fatal("basic auth username must be provided")
@@ -30,6 +28,26 @@ func main() {
 
 	if app.auth.password == "" {
 		log.Fatal("basic auth password must be provided")
+	}
+
+	if app.url == "" {
+		slog.Warn("no root url detected, defaulting to localhost.")
+	}
+
+	if app.key == "" {
+		slog.Warn("no upload key detected")
+	}
+
+	if app.filesDir == "" {
+		slog.Warn("file dir is not set, running on default ./files")
+		app.filesDir = "./files"
+	}
+
+	if app.port == "" {
+		slog.Info("running on default port")
+		app.port = ":3235"
+	} else {
+		slog.Info("running on modified port")
 	}
 
 	mux := http.NewServeMux()
@@ -40,7 +58,7 @@ func main() {
 	)
 
 	srv := &http.Server{
-		Addr:         port,
+		Addr:         app.port,
 		Handler:      mux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

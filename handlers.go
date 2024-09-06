@@ -16,8 +16,10 @@ type Application struct {
 		username string
 		password string
 	}
-	url string
-	key string
+	url      string
+	key      string
+	filesDir string
+	port     string
 }
 
 func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +29,7 @@ func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := filepath.Clean(r.URL.Path)
-	path := filepath.Join(filesDir, name)
+	path := filepath.Join(app.filesDir, name)
 
 	if !filepath.IsLocal(path) {
 		http.Error(w, "Wrong url", http.StatusBadRequest)
@@ -42,7 +44,7 @@ func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) treeHandler(w http.ResponseWriter, r *http.Request) {
-	http.StripPrefix("/tree/", http.FileServer(http.Dir(filesDir))).ServeHTTP(w, r)
+	http.StripPrefix("/tree/", http.FileServer(http.Dir(app.filesDir))).ServeHTTP(w, r)
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,8 +65,8 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	if _, err := os.Stat(filesDir); err != nil {
-		if err := os.Mkdir(filesDir, 0750); err != nil {
+	if _, err := os.Stat(app.filesDir); err != nil {
+		if err := os.Mkdir(app.filesDir, 0750); err != nil {
 			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
 		}
 	}
@@ -73,7 +75,7 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	filename := fmt.Sprintf("%d%s", time, filepath.Ext(handler.Filename))
 
-	filepath := fmt.Sprintf("%s/%s", filesDir, filename)
+	filepath := fmt.Sprintf("%s/%s", app.filesDir, filename)
 
 	dst, err := os.Create(filepath)
 	if err != nil {
@@ -86,7 +88,7 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if app.url == "" {
-		fmt.Fprintf(w, "http://localhost%s/%s\n", port, filename)
+		fmt.Fprintf(w, "http://localhost%s/%s\n", app.port, filename)
 	} else {
 		fmt.Fprintf(w, "http://%s/%s\n", app.url, filename)
 	}
