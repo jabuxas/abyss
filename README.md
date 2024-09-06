@@ -25,12 +25,9 @@ note: this is a project made for learning purposes, you should use other more ma
 docker compose up -d # might be docker-compose depending on distro
 ```
 
-- dont change inside port of 8999 unless you know what you're doing
-- when updating, run with `--build` instead:
+- you can optionally use the [docker image](https://git.jabuxas.xyz/jabuxas/-/packages/container/abyss/latest) directly and set it up how you want
 
-```bash
-docker compose up --build -d
-```
+- dont change inside port of 8999 unless you know what you're doing
 
 ### manual
 
