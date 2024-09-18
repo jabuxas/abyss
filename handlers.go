@@ -43,10 +43,34 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
+		ext := filepath.Ext(path)
+
+		textExtensions := map[string]bool{
+			".sh": true, ".bash": true, ".zsh": true,
+			".bat": true, ".cmd": true, ".ps1": true,
+			".ini": true, ".cfg": true, ".conf": true,
+			".toml": true, ".yml": true, ".yaml": true,
+			".c": true, ".cpp": true, ".h": true,
+			".go": true, ".py": true, ".js": true,
+			".ts": true, ".html": true, ".htm": true,
+			".xml": true, ".css": true, ".java": true,
+			".rs": true, ".rb": true, ".php": true,
+			".pl": true, ".sql": true, ".md": true,
+			".log": true, ".txt": true, ".csv": true,
+			".json": true, ".env": true, ".sum": true,
+			".gitignore": true, ".dockerfile": true, ".Makefile": true,
+			".rst": true,
+		}
+
+		if textExtensions[ext] {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		}
+
 		http.ServeFile(w, r, path)
-	} else {
-		http.StripPrefix("/", http.FileServer(http.Dir("./static"))).ServeHTTP(w, r)
+		return
 	}
+
+	http.StripPrefix("/", http.FileServer(http.Dir("./static"))).ServeHTTP(w, r)
 }
 
 func (app *Application) lastHandler(w http.ResponseWriter, r *http.Request) {
