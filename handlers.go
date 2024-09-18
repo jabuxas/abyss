@@ -16,10 +16,11 @@ type Application struct {
 		username string
 		password string
 	}
-	url      string
-	key      string
-	filesDir string
-	port     string
+	url              string
+	key              string
+	filesDir         string
+	port             string
+	lastUploadedFile string
 }
 
 func (app *Application) treeHandler(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +46,14 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.StripPrefix("/", http.FileServer(http.Dir("static"))).ServeHTTP(w, r)
 	}
+}
+
+func (app *Application) lastHandler(w http.ResponseWriter, r *http.Request) {
+	if app.lastUploadedFile == "" {
+		http.Error(w, "No new files uploaded yet", http.StatusNotFound)
+		return
+	}
+	http.ServeFile(w, r, app.lastUploadedFile)
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +95,8 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if _, err := io.Copy(dst, file); err != nil {
 		http.Error(w, "Error copying the file", http.StatusInternalServerError)
 	}
+
+	app.lastUploadedFile = filepath
 
 	if app.url == "" {
 		fmt.Fprintf(w, "http://localhost%s/%s\n", app.port, filename)

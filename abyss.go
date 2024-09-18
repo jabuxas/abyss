@@ -56,6 +56,7 @@ func main() {
 		"/tree/",
 		app.basicAuth(app.treeHandler),
 	)
+	mux.HandleFunc("/last", app.lastHandler)
 
 	srv := &http.Server{
 		Addr:         app.port,
