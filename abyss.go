@@ -43,11 +43,12 @@ func main() {
 		app.filesDir = "./files"
 	}
 
-	if app.port == ":" {
+	if app.port == "" {
 		slog.Info("running on default port")
 		app.port = ":3235"
 	} else {
 		slog.Info("running on modified port")
+		app.port = ":" + app.port
 	}
 
 	mux := http.NewServeMux()

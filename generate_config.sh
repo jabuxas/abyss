@@ -30,7 +30,7 @@ ABYSS_URL=$ABYSS_URL
 ABYSS_FILEDIR=$ABYSS_FILEDIR
 
 # The port the server will run on, it's fine to leave it empty. Defaults to :3235
-ABYSS_PORT=:$ABYSS_PORT
+ABYSS_PORT=$ABYSS_PORT
 
 # This is the username of the user for accessing /tree
 AUTH_USERNAME=$AUTH_USERNAME
