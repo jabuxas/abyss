@@ -44,7 +44,7 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
 		http.ServeFile(w, r, path)
 	} else {
-		http.StripPrefix("/", http.FileServer(http.Dir("static"))).ServeHTTP(w, r)
+		http.StripPrefix("/", http.FileServer(http.Dir("./static"))).ServeHTTP(w, r)
 	}
 }
 
