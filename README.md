@@ -10,6 +10,7 @@ note: this is a project made for learning purposes, you should use other more ma
   - [installing with docker](#docker)
   - [installing manually](#manual)
 - [uploading files](#uploading)
+- [home page](#homepage)
 - [docs](#docs)
 - [todo list](#todo)
 
@@ -40,8 +41,14 @@ docker compose up -d # might be docker-compose depending on distro
 - then, simply upload your files with curl:
 
 ```bash
-curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:8999/
+curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:3235/
 ```
+
+## homepage
+
+- there is an example homepage in `static/` you can edit directly, which the server will serve automatically
+- if running with docker, it's also possible to override `/static` inside the container with your own page.
+  - it is preferred to use `dev/` for that reason, since it is git-ignored and that way makes it easier if wanting to update regularly without making changes to the tree
 
 ## docs
 
@@ -59,4 +66,5 @@ curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost
 - [x] add file browser (like file://)
 - [x] add file extension in its name
 - [x] login prompt when accessing /tree
+- [x] home page
 - [ ] add rate limits
