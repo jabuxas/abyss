@@ -22,7 +22,11 @@ type Application struct {
 	port     string
 }
 
-func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) treeHandler(w http.ResponseWriter, r *http.Request) {
+	http.StripPrefix("/tree/", http.FileServer(http.Dir(app.filesDir))).ServeHTTP(w, r)
+}
+
+func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		app.uploadHandler(w, r)
 		return
@@ -39,12 +43,8 @@ func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
 	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
 		http.ServeFile(w, r, path)
 	} else {
-		http.NotFound(w, r)
+		http.StripPrefix("/", http.FileServer(http.Dir("static"))).ServeHTTP(w, r)
 	}
-}
-
-func (app *Application) treeHandler(w http.ResponseWriter, r *http.Request) {
-	http.StripPrefix("/tree/", http.FileServer(http.Dir(app.filesDir))).ServeHTTP(w, r)
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {

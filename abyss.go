@@ -51,7 +51,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.fileHandler)
+	mux.HandleFunc("/", app.indexHandler)
 	mux.HandleFunc(
 		"/tree/",
 		app.basicAuth(app.treeHandler),
