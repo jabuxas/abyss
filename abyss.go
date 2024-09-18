@@ -13,7 +13,10 @@ import (
 func main() {
 	app := new(Application)
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		slog.Warn("no .env file detected, getting env from running process")
+	}
 
 	app.auth.username = os.Getenv("AUTH_USERNAME")
 	app.auth.password = os.Getenv("AUTH_PASSWORD")
