@@ -4,7 +4,8 @@ services:
     ports:
       - "3235:3235"
     volumes:
-      - ./files:/app/files
-    restart: unless-stopped
+      - ./files:/files
+      - ./dev:/static:ro
     env_file:
       - .env
+    restart: unless-stopped
