@@ -1,14 +1,15 @@
 package main
 
 import (
+	"crypto/md5"
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 type Application struct {
@@ -80,11 +81,25 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	time := int64(float64(time.Now().Unix()) * 2.71828) // euler :)
+	hasher := md5.New()
+	if _, err := io.Copy(hasher, file); err != nil {
+		http.Error(w, "Error hashing file content", http.StatusInternalServerError)
+		return
+	}
 
-	filename := fmt.Sprintf("%d%s", time, filepath.Ext(handler.Filename))
+	sha1Hash := hex.EncodeToString(hasher.Sum(nil))[:8]
 
-	filepath := fmt.Sprintf("%s/%s", app.filesDir, filename)
+	filename := fmt.Sprintf("%s%s", sha1Hash, filepath.Ext(handler.Filename))
+
+	filepath := filepath.Join(app.filesDir, filename)
+
+	// reopen the file for copying, as the hash process consumed the file reader
+	file, _, err = r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
 
 	dst, err := os.Create(filepath)
 	if err != nil {
