@@ -10,7 +10,7 @@ note: this is a project made for learning purposes, you should use other more ma
   - [installing with docker](#docker)
   - [installing manually](#manual)
 - [uploading files](#uploading)
-- [home page](#homepage)
+- [theming](#theming)
 - [docs](#docs)
 - [todo list](#todo)
 
@@ -44,10 +44,11 @@ docker compose up -d # might be docker-compose depending on distro
 curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:3235/
 ```
 
-## homepage
+## theming
 
 - there is an example homepage in `static/` you can edit directly, which the server will serve automatically
 - if running with docker, it's also possible to override `/static` inside the container with your own page.
+- same thing with templates in `templates/`
   - it is preferred to use `dev/` for that reason, since it is git-ignored and that way makes it easier if wanting to update regularly without making changes to the tree
 
 ## docs
