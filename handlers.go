@@ -7,9 +7,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
+	"text/template"
 )
 
 type Application struct {
@@ -24,8 +26,63 @@ type Application struct {
 	lastUploadedFile string
 }
 
-func (app *Application) treeHandler(w http.ResponseWriter, r *http.Request) {
-	http.StripPrefix("/tree/", http.FileServer(http.Dir(app.filesDir))).ServeHTTP(w, r)
+type FileInfo struct {
+	Name          string
+	Path          string
+	Size          int64
+	FormattedSize string
+}
+
+type TemplateData struct {
+	Files []FileInfo
+	URL   string
+}
+
+func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Request) {
+	dir := app.filesDir + r.URL.Path
+
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var fileInfos []FileInfo
+	for _, file := range files {
+		filePath := filepath.Join(dir, file.Name())
+		info, err := os.Stat(filePath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fileInfos = append(fileInfos, FileInfo{
+			Name:          file.Name(),
+			Path:          filepath.Join(r.URL.Path, file.Name()),
+			Size:          info.Size(),
+			FormattedSize: formatFileSize(info.Size()),
+		})
+	}
+
+	tmpl := template.Must(template.ParseFiles("templates/dirlist.html"))
+	templateData := TemplateData{
+		Files: fileInfos,
+		URL:   app.url,
+	}
+	if err := tmpl.Execute(w, templateData); err != nil {
+		slog.Warn(error.Error(err))
+	}
+}
+
+func formatFileSize(size int64) string {
+	if size < 1024 {
+		return fmt.Sprintf("%d B", size)
+	} else if size < 1024*1024 {
+		return fmt.Sprintf("%.2f KB", float64(size)/1024)
+	} else if size < 1024*1024*1024 {
+		return fmt.Sprintf("%.2f MB", float64(size)/(1024*1024))
+	}
+	return fmt.Sprintf("%.2f GB", float64(size)/(1024*1024*1024))
 }
 
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -137,11 +194,7 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.lastUploadedFile = filepath
 
-	if app.url == "" {
-		fmt.Fprintf(w, "http://localhost%s/%s\n", app.port, filename)
-	} else {
-		fmt.Fprintf(w, "http://%s/%s\n", app.url, filename)
-	}
+	fmt.Fprintf(w, "http://%s/%s\n", app.url, filename)
 }
 
 func (app *Application) checkAuth(r *http.Request) bool {

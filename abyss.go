@@ -33,10 +33,6 @@ func main() {
 		log.Fatal("basic auth password must be provided")
 	}
 
-	if app.url == "" {
-		slog.Warn("no root url detected, defaulting to localhost.")
-	}
-
 	if app.key == "" {
 		slog.Warn("no upload key detected")
 	}
@@ -54,11 +50,19 @@ func main() {
 		app.port = ":" + app.port
 	}
 
+	if app.url == "" {
+		slog.Warn("no root url detected, defaulting to localhost.")
+		app.url = "localhost" + app.port
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.indexHandler)
-	mux.HandleFunc(
+	mux.Handle(
 		"/tree/",
-		app.basicAuth(app.treeHandler),
+		http.StripPrefix(
+			"/tree",
+			app.basicAuth(app.fileListingHandler),
+		),
 	)
 	mux.HandleFunc("/last", app.lastHandler)
 
