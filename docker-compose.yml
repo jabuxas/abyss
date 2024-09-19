@@ -9,4 +9,6 @@ services:
       - ./dev/templates:/templates:ro
     env_file:
       - .env
+    tmpfs:
+      - /tmp
     restart: unless-stopped
