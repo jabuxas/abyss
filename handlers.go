@@ -6,12 +6,12 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	"html/template"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
-	"text/template"
 )
 
 type Application struct {
