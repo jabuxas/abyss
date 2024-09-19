@@ -5,7 +5,8 @@ services:
       - "3235:3235"
     volumes:
       - ./files:/files
-      - ./dev:/static:ro
+      - ./dev/home:/static:ro
+      - ./dev/templates:/templates:ro
     env_file:
       - .env
     restart: unless-stopped
