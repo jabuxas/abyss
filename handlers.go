@@ -119,8 +119,16 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 			".rst": true,
 		}
 
+		videoExtensions := map[string]bool{
+			".mkv": true,
+		}
+
 		if textExtensions[ext] {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		}
+
+		if videoExtensions[ext] {
+			w.Header().Set("Content-Type", "video/mp4")
 		}
 
 		http.ServeFile(w, r, path)
