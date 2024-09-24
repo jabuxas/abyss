@@ -29,3 +29,16 @@ button {
 button:hover {
     background-color: #45a29e;
 }
+
+footer {
+    position: absolute;
+    bottom: 1rem;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+footer a {
+    color: #66fcf1;
+    text-decoration: none;
+    font-weight: bold;
+}
