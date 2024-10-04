@@ -60,7 +60,7 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 			Name:          file.Name(),
 			Path:          filepath.Join(r.URL.Path, file.Name()),
 			Size:          info.Size(),
-			FormattedSize: formatFileSize(info.Size()),
+			FormattedSize: FormatFileSize(info.Size()),
 		})
 	}
 
@@ -74,20 +74,9 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func formatFileSize(size int64) string {
-	if size < 1024 {
-		return fmt.Sprintf("%d B", size)
-	} else if size < 1024*1024 {
-		return fmt.Sprintf("%.2f KB", float64(size)/1024)
-	} else if size < 1024*1024*1024 {
-		return fmt.Sprintf("%.2f MB", float64(size)/(1024*1024))
-	}
-	return fmt.Sprintf("%.2f GB", float64(size)/(1024*1024*1024))
-}
-
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		app.uploadHandler(w, r)
+		app.uploadCurlHandler(w, r)
 		return
 	}
 
@@ -146,17 +135,21 @@ func (app *Application) lastHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, app.lastUploadedFile)
 }
 
-func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) uploadCurlHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 		return
 	}
 
-	if !app.checkAuth(r) {
+	if !CheckAuth(r, app.key) {
 		http.Error(w, "You're not authorized.", http.StatusBadRequest)
 		return
 	}
 
+	app.uploadHandler(w, r)
+}
+
+func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
@@ -203,10 +196,6 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	app.lastUploadedFile = filepath
 
 	fmt.Fprintf(w, "http://%s/%s\n", app.url, filename)
-}
-
-func (app *Application) checkAuth(r *http.Request) bool {
-	return r.Header.Get("X-Auth") == string(app.key)
 }
 
 func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
