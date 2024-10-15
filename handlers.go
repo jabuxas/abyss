@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"io"
 	"log/slog"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -148,6 +147,11 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) parserHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := os.Stat(app.filesDir); err != nil {
+		if err := os.Mkdir(app.filesDir, 0750); err != nil {
+			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
+		}
+	}
 	if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
 		app.formHandler(w, r)
 	} else if strings.Split(contentType, ";")[0] == "multipart/form-data" {
@@ -158,15 +162,9 @@ func (app *Application) parserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
-	file, handler, err := r.FormFile("content")
-	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		slog.Warn(error.Error(err))
-		return
-	}
-	defer file.Close()
-
-	app.saveFile(w, r, file, handler, "content")
+	// content := r.FormValue("content")
+	//
+	// app.saveFile(w, r, file, ".txt", "content")
 }
 
 func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
@@ -188,35 +186,17 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	app.saveFile(w, r, file, handler, "file")
-}
-
-func (app *Application) saveFile(
-	w http.ResponseWriter,
-	r *http.Request,
-	file multipart.File,
-	handler *multipart.FileHeader,
-	form string,
-) {
-	if _, err := os.Stat(app.filesDir); err != nil {
-		if err := os.Mkdir(app.filesDir, 0750); err != nil {
-			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
-		}
-	}
-
-	filename, _ := HashFile(file, handler)
-
-	filepath := filepath.Join(app.filesDir, filename)
+	url := app.publicURL(file, filepath.Ext(handler.Filename))
 
 	// reopen the file for copying, as the hash process consumed the file reader
-	file, _, err := r.FormFile(form)
+	file, _, err = r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
 
-	dst, err := os.Create(filepath)
+	dst, err := os.Create(app.lastUploadedFile)
 	if err != nil {
 		http.Error(w, "Error creating file\n", http.StatusInternalServerError)
 	}
@@ -226,9 +206,17 @@ func (app *Application) saveFile(
 		http.Error(w, "Error copying the file", http.StatusInternalServerError)
 	}
 
+	fmt.Fprintf(w, "%s", url)
+}
+
+func (app *Application) publicURL(file io.Reader, extension string) string {
+	filename, _ := HashFile(file, extension)
+
+	filepath := filepath.Join(app.filesDir, filename)
+
 	app.lastUploadedFile = filepath
 
-	fmt.Fprintf(w, "http://%s/%s\n", app.url, filename)
+	return fmt.Sprintf("http://%s/%s\n", app.url, filename)
 }
 
 func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
