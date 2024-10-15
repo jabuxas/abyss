@@ -1,6 +1,6 @@
 # abyss
 
-abyss is a basic single user http server made for uploading files (logs, images) and then sharing them to the internet
+abyss is a basic (mostly) single user http server made for uploading files (logs, images) and then sharing them to the internet
 
 note: this is a project made for learning purposes, you should use other more mature projects if running in production. probably.
 
@@ -58,6 +58,7 @@ curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost
 - `UPLOAD_KEY`: this is key checked when uploading files. if the key doesn't match with server's one, then it refuses uploading.
 - `ABYSS_FILEDIR`: this points to the directory where abyss will save the uploads to. defaults to `./files`
 - `ABYSS_PORT`: this is the port the server will run on. safe to leave empty. defaults to 3235
+- `SHOULD_AUTH`: if it is `yes`, then to upload files you will need authentication (same as `/tree`), anything other than that and upload is free for anyone
 
 ## todo:
 
