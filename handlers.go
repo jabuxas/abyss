@@ -69,7 +69,7 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 		URL:   app.url,
 	}
 	if err := tmpl.Execute(w, templateData); err != nil {
-		slog.Warn(error.Error(err))
+		slog.Warn(err.Error())
 	}
 }
 
@@ -142,7 +142,7 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmpl := template.Must(template.ParseFiles("templates/upload.html"))
 	if err := tmpl.Execute(w, app.uploadHandler); err != nil {
-		slog.Warn(error.Error(err))
+		slog.Warn(err.Error())
 	}
 }
 
@@ -159,64 +159,6 @@ func (app *Application) parserHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 	}
-}
-
-func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
-	// content := r.FormValue("content")
-	//
-	// app.saveFile(w, r, file, ".txt", "content")
-}
-
-func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Method not allowed", http.StatusUnauthorized)
-		return
-	}
-
-	if !CheckAuth(r, app.key) {
-		http.Error(w, "You're not authorized.", http.StatusBadRequest)
-		return
-	}
-
-	file, handler, err := r.FormFile("file")
-	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		slog.Warn(error.Error(err))
-		return
-	}
-	defer file.Close()
-
-	url := app.publicURL(file, filepath.Ext(handler.Filename))
-
-	// reopen the file for copying, as the hash process consumed the file reader
-	file, _, err = r.FormFile("file")
-	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	dst, err := os.Create(app.lastUploadedFile)
-	if err != nil {
-		http.Error(w, "Error creating file\n", http.StatusInternalServerError)
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, "Error copying the file", http.StatusInternalServerError)
-	}
-
-	fmt.Fprintf(w, "%s", url)
-}
-
-func (app *Application) publicURL(file io.Reader, extension string) string {
-	filename, _ := HashFile(file, extension)
-
-	filepath := filepath.Join(app.filesDir, filename)
-
-	app.lastUploadedFile = filepath
-
-	return fmt.Sprintf("http://%s/%s\n", app.url, filename)
 }
 
 func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
@@ -244,4 +186,81 @@ func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8`)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	})
+}
+
+func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
+	content := r.FormValue("content")
+
+	if err := os.WriteFile("/tmp/file.txt", []byte(content), 0666); err != nil {
+		http.Error(w, "Couldn't parse content body", http.StatusNoContent)
+	}
+
+	file, err := os.Open("/tmp/file.txt")
+	if err != nil {
+		http.Error(w, "Couldn't find file", http.StatusNotFound)
+	}
+	defer file.Close()
+
+	url := app.publicURL(file, ".txt")
+
+	// reopening file because hash consumes it
+	file, err = os.Open("/tmp/file.txt")
+	if err != nil {
+		http.Error(w, "Couldn't find file", http.StatusNotFound)
+	}
+	defer file.Close()
+
+	err = SaveFile(app.lastUploadedFile, file)
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
+	}
+
+	fmt.Fprintf(w, "%s", url)
+}
+
+func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
+		return
+	}
+
+	if !CheckAuth(r, app.key) {
+		http.Error(w, "You're not authorized.", http.StatusBadRequest)
+		return
+	}
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		slog.Warn(err.Error())
+		return
+	}
+	defer file.Close()
+
+	url := app.publicURL(file, filepath.Ext(handler.Filename))
+
+	// reopen the file for copying, as the hash process consumed the file reader
+	file, _, err = r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	err = SaveFile(app.lastUploadedFile, file)
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
+	}
+
+	fmt.Fprintf(w, "%s", url)
+}
+
+func (app *Application) publicURL(file io.Reader, extension string) string {
+	filename, _ := HashFile(file, extension)
+
+	filepath := filepath.Join(app.filesDir, filename)
+
+	app.lastUploadedFile = filepath
+
+	return fmt.Sprintf("http://%s/%s\n", app.url, filename)
 }

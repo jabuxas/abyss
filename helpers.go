@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 func CheckAuth(r *http.Request, key string) bool {
@@ -34,4 +35,17 @@ func HashFile(file io.Reader, extension string) (string, error) {
 	filename := fmt.Sprintf("%s%s", sha1Hash, extension)
 
 	return filename, nil
+}
+
+func SaveFile(name string, file io.Reader) error {
+	dst, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		return err
+	}
+	return nil
 }
