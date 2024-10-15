@@ -22,6 +22,11 @@ if [ -z $AUTH_PASSWORD ]; then
     AUTH_PASSWORD="admin"
 fi
 
+read -p "Auth for upload form - should password be needed to upload text through the browser? [yes]: " -e SHOULD_AUTH
+if [ -z $SHOULD_AUTH ]; then
+    SHOULD_AUTH="yes"
+fi
+
 cat << EOF > .env
 # This is the full name of the final domain for the server. Example: paste.abyss.dev
 ABYSS_URL=$ABYSS_URL
@@ -37,6 +42,9 @@ AUTH_USERNAME=$AUTH_USERNAME
 
 # This is the password of the user for accessing /tree
 AUTH_PASSWORD=$AUTH_PASSWORD
+
+# This is whether you need a password to upload text through the browser
+SHOULD_AUTH=$SHOULD_AUTH
 
 # This is the key needed to make uploads. Include it as X-Auth in curl.
 # Tip: Save it somewhere and use it in curl with \$(cat /path/to/key)

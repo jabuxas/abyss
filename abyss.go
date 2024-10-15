@@ -25,6 +25,8 @@ func main() {
 	app.filesDir = os.Getenv("ABYSS_FILEDIR")
 	app.port = os.Getenv("ABYSS_PORT")
 
+	auth := os.Getenv("SHOULD_AUTH")
+
 	if app.auth.username == "" {
 		log.Fatal("basic auth username must be provided")
 	}
@@ -65,7 +67,13 @@ func main() {
 		),
 	)
 	mux.HandleFunc("/last", app.lastUploadedHandler)
-	mux.HandleFunc("/upload", app.basicAuth(app.uploadHandler))
+	if auth == "yes" {
+		mux.HandleFunc("/upload", app.basicAuth(app.uploadHandler))
+		slog.Warn("text uploading through the browser will be restricted")
+	} else {
+		mux.HandleFunc("/upload", app.uploadHandler)
+		slog.Warn("text uploading through the browser will NOT be restricted")
+	}
 
 	srv := &http.Server{
 		Addr:         app.port,
