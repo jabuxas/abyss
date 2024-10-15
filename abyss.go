@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -65,6 +66,7 @@ func main() {
 		),
 	)
 	mux.HandleFunc("/last", app.lastHandler)
+	mux.HandleFunc("/upload", app.basicAuth(app.uploadButtonHandler))
 
 	srv := &http.Server{
 		Addr:         app.port,

@@ -149,10 +149,32 @@ func (app *Application) uploadCurlHandler(w http.ResponseWriter, r *http.Request
 	app.uploadHandler(w, r)
 }
 
+func (app *Application) uploadButtonHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodPost {
+		app.uploadHandler(w, r)
+		return
+	}
+
+	tmpl := template.Must(template.ParseFiles("templates/upload.html"))
+	if err := tmpl.Execute(w, app.uploadHandler); err != nil {
+		slog.Warn(error.Error(err))
+	}
+}
+
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
+
+	// if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
+	// 	content := r.FormValue("content")
+	// } else if contentType == "multipart/form-data" {
+	// }
+}
+
+func (app *Application) formFileHandler(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		slog.Warn(error.Error(err))
 		return
 	}
 	defer file.Close()
