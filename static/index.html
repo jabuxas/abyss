@@ -11,19 +11,20 @@
 
 <body>
     <h1>abyss paste</h1>
-    <div class="top-down">
-        <div>
-            <a href="/tree">
-                <button>files uploaded</button>
-            </a>
-            <a href="/upload">
-                <button>go to upload</button>
-            </a>
-        </div>
+    <div>
+        <a href="/tree">
+            <button>all uploaded files</button>
+        </a>
         <a href="/last">
             <button>last uploaded file</button>
         </a>
     </div>
+
+    <form action="/upload" method="POST">
+        <textarea name="content" placeholder="Enter your content here..."></textarea><br />
+        <button type="submit">upload</button>
+    </form>
+
     <footer>
         abyss paste - powered by
         <a href="https://github.com/jabuxas/abyss" target="_blank">abyss</a>

@@ -139,11 +139,6 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 		app.parserHandler(w, r)
 		return
 	}
-
-	tmpl := template.Must(template.ParseFiles("templates/upload.html"))
-	if err := tmpl.Execute(w, app.uploadHandler); err != nil {
-		slog.Warn(err.Error())
-	}
 }
 
 func (app *Application) parserHandler(w http.ResponseWriter, r *http.Request) {
