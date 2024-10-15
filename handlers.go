@@ -1,17 +1,17 @@
 package main
 
 import (
-	"crypto/md5"
 	"crypto/sha256"
 	"crypto/subtle"
-	"encoding/hex"
 	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Application struct {
@@ -76,7 +76,7 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		app.uploadCurlHandler(w, r)
+		app.parserHandler(w, r)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.StripPrefix("/", http.FileServer(http.Dir("./static"))).ServeHTTP(w, r)
 }
 
-func (app *Application) lastHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Request) {
 	if app.lastUploadedFile == "" {
 		http.Error(w, "No new files uploaded yet", http.StatusNotFound)
 		return
@@ -135,7 +135,41 @@ func (app *Application) lastHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, app.lastUploadedFile)
 }
 
-func (app *Application) uploadCurlHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		app.parserHandler(w, r)
+		return
+	}
+
+	tmpl := template.Must(template.ParseFiles("templates/upload.html"))
+	if err := tmpl.Execute(w, app.uploadHandler); err != nil {
+		slog.Warn(error.Error(err))
+	}
+}
+
+func (app *Application) parserHandler(w http.ResponseWriter, r *http.Request) {
+	if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
+		app.formHandler(w, r)
+	} else if strings.Split(contentType, ";")[0] == "multipart/form-data" {
+		app.curlHandler(w, r)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
+	}
+}
+
+func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
+	file, handler, err := r.FormFile("content")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		slog.Warn(error.Error(err))
+		return
+	}
+	defer file.Close()
+
+	app.saveFile(w, r, file, handler, "content")
+}
+
+func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 		return
@@ -146,31 +180,6 @@ func (app *Application) uploadCurlHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	app.uploadHandler(w, r)
-}
-
-func (app *Application) uploadButtonHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method == http.MethodPost {
-		app.uploadHandler(w, r)
-		return
-	}
-
-	tmpl := template.Must(template.ParseFiles("templates/upload.html"))
-	if err := tmpl.Execute(w, app.uploadHandler); err != nil {
-		slog.Warn(error.Error(err))
-	}
-}
-
-func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
-
-	// if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
-	// 	content := r.FormValue("content")
-	// } else if contentType == "multipart/form-data" {
-	// }
-}
-
-func (app *Application) formFileHandler(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
@@ -179,26 +188,28 @@ func (app *Application) formFileHandler(w http.ResponseWriter, r *http.Request) 
 	}
 	defer file.Close()
 
+	app.saveFile(w, r, file, handler, "file")
+}
+
+func (app *Application) saveFile(
+	w http.ResponseWriter,
+	r *http.Request,
+	file multipart.File,
+	handler *multipart.FileHeader,
+	form string,
+) {
 	if _, err := os.Stat(app.filesDir); err != nil {
 		if err := os.Mkdir(app.filesDir, 0750); err != nil {
 			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
 		}
 	}
 
-	hasher := md5.New()
-	if _, err := io.Copy(hasher, file); err != nil {
-		http.Error(w, "Error hashing file content", http.StatusInternalServerError)
-		return
-	}
-
-	sha1Hash := hex.EncodeToString(hasher.Sum(nil))[:8]
-
-	filename := fmt.Sprintf("%s%s", sha1Hash, filepath.Ext(handler.Filename))
+	filename, _ := HashFile(file, handler)
 
 	filepath := filepath.Join(app.filesDir, filename)
 
 	// reopen the file for copying, as the hash process consumed the file reader
-	file, _, err = r.FormFile("file")
+	file, _, err := r.FormFile(form)
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
