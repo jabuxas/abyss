@@ -75,7 +75,7 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		app.parserHandler(w, r)
+		app.uploadHandler(w, r)
 		return
 	}
 
@@ -135,13 +135,6 @@ func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		app.parserHandler(w, r)
-		return
-	}
-}
-
-func (app *Application) parserHandler(w http.ResponseWriter, r *http.Request) {
 	if _, err := os.Stat(app.filesDir); err != nil {
 		if err := os.Mkdir(app.filesDir, 0750); err != nil {
 			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
