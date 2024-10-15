@@ -201,7 +201,7 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	url := app.publicURL(file, ".txt")
+	filename := app.publicURL(file, ".txt")
 
 	// reopening file because hash consumes it
 	file, err = os.Open("/tmp/file.txt")
@@ -215,7 +215,7 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
 	}
 
-	fmt.Fprintf(w, "%s", url)
+	fmt.Fprintf(w, "%s", fmt.Sprintf("http://%s/%s\n", app.url, filename))
 }
 
 func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
@@ -237,7 +237,7 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	url := app.publicURL(file, filepath.Ext(handler.Filename))
+	filename := app.publicURL(file, filepath.Ext(handler.Filename))
 
 	// reopen the file for copying, as the hash process consumed the file reader
 	file, _, err = r.FormFile("file")
@@ -252,7 +252,7 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
 	}
 
-	fmt.Fprintf(w, "%s", url)
+	fmt.Fprintf(w, "%s", fmt.Sprintf("http://%s/%s\n", app.url, filename))
 }
 
 func (app *Application) publicURL(file io.Reader, extension string) string {
@@ -262,5 +262,5 @@ func (app *Application) publicURL(file io.Reader, extension string) string {
 
 	app.lastUploadedFile = filepath
 
-	return fmt.Sprintf("http://%s/%s\n", app.url, filename)
+	return filename
 }
