@@ -25,10 +25,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-evenly;
+            padding: 10px;
         }
 
         .content {
@@ -86,11 +83,7 @@
 </head>
 
 <body>
-    <header>
-        {{.Path}} {{if eq .Type "pdf"}}
-        <a href="/{{.Name}}" class="btn-download" download>Download PDF</a>
-        {{end}}
-    </header>
+    <header>{{.Path}}/{{.Name}}</header>
     <div class="content">
         {{if eq .Type "image"}}
         <img src="/{{.Name}}" alt="Image" />
