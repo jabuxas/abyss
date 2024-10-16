@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{.Name}}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: "Arial", sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #2e2e2e;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+
+        .content {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        img,
+        video,
+        embed,
+        iframe {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            background-color: #000;
+        }
+
+        .pdf-embed {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .btn-download {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #36f9f6;
+            color: #000;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background-color: #2bd3d0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #2e2e2e;
+            font-size: 0.8rem;
+            color: #aaa;
+            border-top: 1px solid #36f9f6;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        {{.Path}} {{if eq .Type "pdf"}}
+        <a href="/{{.Name}}" class="btn-download" download>Download PDF</a>
+        {{end}}
+    </header>
+    <div class="content">
+        {{if eq .Type "image"}}
+        <img src="/{{.Name}}" alt="Image" />
+        {{else if eq .Type "pdf"}}
+        <embed src="/{{.Name}}" type="application/pdf" class="pdf-embed" />
+        {{else if eq .Type "video"}}
+        <video controls>
+            <source src="/{{.Name}}" type="video/mp4" />
+            Your browser does not support the video tag.
+        </video>
+        {{else if eq .Type "text"}}
+        <div class="text-content">{{.Content}}</div>
+        {{end}}
+    </div>
+</body>
+
+</html>

@@ -31,6 +31,7 @@ type FileInfo struct {
 	Path          string
 	Size          int64
 	FormattedSize string
+	Type          string
 }
 
 type TemplateData struct {
