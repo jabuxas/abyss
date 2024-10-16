@@ -64,7 +64,7 @@ pst() {
     return 1
   fi
 
-  curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" https://paste.jabuxas.xyz
+  curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235
 
   if [[ -p /dev/stdin ]]; then
     rm "$file"
@@ -88,7 +88,7 @@ function pst
         set file "$argv[1]"
     end
 
-    curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" https://paste.jabuxas.xyz
+    curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235
 
     if command test -p /dev/stdin
         rm "$file"
