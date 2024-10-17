@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -34,10 +35,13 @@ var extensions = map[string]string{
 func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 	tmpl := template.Must(template.ParseFiles("templates/files.html"))
 
+	fileContent, _ := os.ReadFile("." + file)
+
 	fileInfo := FileInfo{
-		Name: file,
-		Path: filepath.Join(app.url, file),
-		Type: getType(file),
+		Name:    file,
+		Path:    filepath.Join(app.url, file),
+		Type:    getType(file),
+		Content: string(fileContent),
 	}
 
 	if err := tmpl.Execute(w, fileInfo); err != nil {

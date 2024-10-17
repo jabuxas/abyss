@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{.Name}}</title>
+    <title>abyss paste</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #1e1e1e;
-            color: #fff;
+            background-color: #1d1f21;
+            color: #c5c6c7;
             font-family: "Arial", sans-serif;
             display: flex;
             flex-direction: column;
@@ -56,28 +56,31 @@
             border: none;
         }
 
-        .btn-download {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #36f9f6;
-            color: #000;
-            border-radius: 5px;
-            text-decoration: none;
+        pre {
+            white-space: pre;
+            font-family: monospace;
             font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-download:hover {
-            background-color: #2bd3d0;
-        }
-
-        footer {
-            text-align: center;
-            padding: 10px;
             background-color: #2e2e2e;
-            font-size: 0.8rem;
-            color: #aaa;
-            border-top: 1px solid #36f9f6;
+            padding: 20px;
+            border-radius: 8px;
+            overflow: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #686868 #2e2e2e;
+        }
+
+        pre::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: #2e2e2e;
+            border-radius: 10px;
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background-color: #686868;
+            border-radius: 10px;
+            border: 3px solid #2e2e2e;
         }
     </style>
 </head>
@@ -85,7 +88,9 @@
 <body>
     <header>{{.Path}}</header>
     <div class="content">
-        {{if eq .Type "image"}}
+        {{if eq .Type "text"}}
+        <pre>{{.Content}}</pre>
+        {{else if eq .Type "image"}}
         <img src="{{.Name}}" alt="Image" />
         {{else if eq .Type "pdf"}}
         <embed src="{{.Name}}" type="application/pdf" class="pdf-embed" />
@@ -94,8 +99,6 @@
             <source src="{{.Name}}" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
-        {{else if eq .Type "text"}}
-        <div class="text-content">{{.Content}}</div>
         {{end}}
     </div>
 </body>
