@@ -3,7 +3,10 @@ FROM golang:1.23 AS builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
-COPY go.mod ./
+
+COPY static/ ./static/
+
+COPY templates/ ./templates
 
 RUN go mod download
 
@@ -14,5 +17,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /abyss
 FROM scratch
 
 COPY --from=builder /abyss /abyss
+COPY --from=builder /app/static /static
+COPY --from=builder /app/templates /templates
 
 CMD ["/abyss"]
