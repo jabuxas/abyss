@@ -29,7 +29,7 @@ var extensions = map[string]string{
 	".log": "text", ".txt": "text", ".csv": "text",
 	".json": "text", ".env": "text", ".sum": "text",
 	".gitignore": "text", ".dockerfile": "text", ".Makefile": "text",
-	".rst": "text", ".el": "text",
+	".rst": "text", ".el": "text", ".fish": "text",
 }
 
 func DisplayFile(app *Application, file string, w http.ResponseWriter) {
