@@ -83,15 +83,15 @@
 </head>
 
 <body>
-    <header>{{.Path}}/{{.Name}}</header>
+    <header>{{.Path}}</header>
     <div class="content">
         {{if eq .Type "image"}}
-        <img src="/{{.Name}}" alt="Image" />
+        <img src="{{.Name}}" alt="Image" />
         {{else if eq .Type "pdf"}}
-        <embed src="/{{.Name}}" type="application/pdf" class="pdf-embed" />
+        <embed src="{{.Name}}" type="application/pdf" class="pdf-embed" />
         {{else if eq .Type "video"}}
         <video controls>
-            <source src="/{{.Name}}" type="video/mp4" />
+            <source src="{{.Name}}" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
         {{else if eq .Type "text"}}

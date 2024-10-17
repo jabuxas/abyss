@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
-	"crypto/subtle"
 	"fmt"
 	"html/template"
 	"io"
@@ -24,19 +22,6 @@ type Application struct {
 	port             string
 	authText         string
 	lastUploadedFile string
-}
-
-type FileInfo struct {
-	Name          string
-	Path          string
-	Size          int64
-	FormattedSize string
-	Type          string
-}
-
-type TemplateData struct {
-	Files []FileInfo
-	URL   string
 }
 
 func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +60,20 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
+	path := fmt.Sprintf(".%s", filepath.Clean(r.URL.Path))
+
+	if !filepath.IsLocal(path) {
+		http.Error(w, "Wrong url", http.StatusBadRequest)
+		return
+	}
+
+	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
+		http.ServeFile(w, r, path)
+		return
+	}
+}
+
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		app.uploadHandler(w, r)
@@ -90,38 +89,7 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
-		ext := filepath.Ext(path)
-
-		textExtensions := map[string]bool{
-			".sh": true, ".bash": true, ".zsh": true,
-			".bat": true, ".cmd": true, ".ps1": true,
-			".ini": true, ".cfg": true, ".conf": true,
-			".toml": true, ".yml": true, ".yaml": true,
-			".c": true, ".cpp": true, ".h": true,
-			".go": true, ".py": true, ".js": true,
-			".ts": true, ".html": true, ".htm": true,
-			".xml": true, ".css": true, ".java": true,
-			".rs": true, ".rb": true, ".php": true,
-			".pl": true, ".sql": true, ".md": true,
-			".log": true, ".txt": true, ".csv": true,
-			".json": true, ".env": true, ".sum": true,
-			".gitignore": true, ".dockerfile": true, ".Makefile": true,
-			".rst": true,
-		}
-
-		videoExtensions := map[string]bool{
-			".mkv": true,
-		}
-
-		if textExtensions[ext] {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		}
-
-		if videoExtensions[ext] {
-			w.Header().Set("Content-Type", "video/mp4")
-		}
-
-		http.ServeFile(w, r, path)
+		DisplayFile(app, "/"+path, w)
 		return
 	}
 
@@ -149,33 +117,6 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 	}
-}
-
-func (app *Application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username, password, ok := r.BasicAuth()
-		if ok {
-			// hash password received
-			usernameHash := sha256.Sum256([]byte(username))
-			passwordHash := sha256.Sum256([]byte(password))
-
-			// hash our password
-			expectedUsernameHash := sha256.Sum256([]byte(app.auth.username))
-			expectedPasswordHash := sha256.Sum256([]byte(app.auth.password))
-
-			// compare hashes
-			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
-			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
-
-			if usernameMatch && passwordMatch {
-				next.ServeHTTP(w, r)
-				return
-			}
-		}
-
-		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8`)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	})
 }
 
 func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {

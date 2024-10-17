@@ -9,21 +9,34 @@ import (
 )
 
 var extensions = map[string]string{
-	".sh":   "text",
-	".mp4":  "video",
-	".pdf":  "pdf",
-	".txt":  "text",
-	".png":  "image",
-	".jpg":  "image",
-	".json": "text",
+	".mp4": "video", ".mkv": "video", ".webm": "video",
+
+	".pdf": "pdf",
+
+	".png": "image", ".jpg": "image", ".jpeg": "image", ".webp": "image",
+
+	".sh": "text", ".bash": "text", ".zsh": "text",
+	".bat": "text", ".cmd": "text", ".ps1": "text",
+	".ini": "text", ".cfg": "text", ".conf": "text",
+	".toml": "text", ".yml": "text", ".yaml": "text",
+	".c": "text", ".cpp": "text", ".h": "text",
+	".go": "text", ".py": "text", ".js": "text",
+	".ts": "text", ".html": "text", ".htm": "text",
+	".xml": "text", ".css": "text", ".java": "text",
+	".rs": "text", ".rb": "text", ".php": "text",
+	".pl": "text", ".sql": "text", ".md": "text",
+	".log": "text", ".txt": "text", ".csv": "text",
+	".json": "text", ".env": "text", ".sum": "text",
+	".gitignore": "text", ".dockerfile": "text", ".Makefile": "text",
+	".rst": "text",
 }
 
-func displayFile(app *Application, file string, w http.ResponseWriter) {
+func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 	tmpl := template.Must(template.ParseFiles("templates/files.html"))
 
 	fileInfo := FileInfo{
 		Name: file,
-		Path: app.url,
+		Path: filepath.Join(app.url, file),
 		Type: getType(file),
 	}
 

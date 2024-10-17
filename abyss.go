@@ -87,16 +87,16 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 		"/tree/",
 		http.StripPrefix(
 			"/tree",
-			app.basicAuth(app.fileListingHandler),
+			BasicAuth(app.fileListingHandler, app),
 		),
 	)
 
 	mux.HandleFunc("/last", app.lastUploadedHandler)
 
-	mux.HandleFunc("/test", app.displayFile)
+	mux.HandleFunc("/files/", app.fileHandler)
 
 	if app.authText == "yes" {
-		mux.HandleFunc("/upload", app.basicAuth(app.uploadHandler))
+		mux.HandleFunc("/upload", BasicAuth(app.uploadHandler, app))
 		slog.Warn("text uploading through the browser will be restricted")
 	} else {
 		mux.HandleFunc("/upload", app.uploadHandler)
