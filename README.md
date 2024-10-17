@@ -130,4 +130,5 @@ end
 - [x] login prompt when accessing /tree
 - [x] home page
 - [x] custom file displaying!!
+- [x] syntax highlighting
 - [ ] add rate limits
