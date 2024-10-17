@@ -12,7 +12,7 @@ abyss is a basic and mostly single user http server written in go made for uploa
 - [features](#features)
 - [running abyss](#running)
   - [installing with docker](#docker)
-  - [installing manually](#manual)
+  - [installing manually](#directly)
 - [uploading files](#uploading)
 - [theming](#theming)
 - [docs](#docs)
@@ -27,9 +27,18 @@ abyss is a basic and mostly single user http server written in go made for uploa
 - **syntax highlighting for code**: syntax highlighting available by default for code files, with support for multiple programming languages. (can be tweaked/changed and even removed)
 - **security considerations**: as it is single user, it's mostly secure but there are still some edges to sharpen
 
-## running:
+## running
 
-- run `./generate_config.sh` to setup the necessary environment variables
+#### setting it up
+
+- clone the repository and cd into it:
+
+```bash
+git clone https://github.com/jabuxas/abyss.git --depth 1 && cd abyss
+```
+
+- then run `./generate_config.sh` to setup the necessary environment variables
+- after that, you can use either docker or run it directly
 
 ### docker
 
@@ -41,7 +50,7 @@ docker compose up -d # might be docker-compose depending on distro
 
 - you can optionally use the [docker image](https://git.jabuxas.xyz/jabuxas/-/packages/container/abyss/latest) directly and set it up how you want
 
-### manual
+### directly
 
 - to run it manually, build it with `go build -o abyss` and run:
 
