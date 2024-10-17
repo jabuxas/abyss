@@ -7,14 +7,6 @@ abyss is a basic and mostly single user http server written in go made for uploa
  <figcaption>this is abyss' default home page<figcaption/>
 </figure>
 
-## features
-
-- **file uploads**: supports uploading various file types, including images, videos, and documents.
-- **flexible media display**: automatically renders uploaded files on a webpage based on their type (images, pdfs, videos, or plain text).
-- **customizable interface**: allows for easy modification of color schemes and layout to suit specific design needs.
-- **syntax highlighting for code**: syntax highlighting available by default for code files, with support for multiple programming languages. (can be tweaked/changed and even removed)
-- **security considerations**: as it is single user, it's mostly secure but there are still some edges to sharpen
-
 ## table of contents
 
 - [features](#features)
