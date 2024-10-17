@@ -18,6 +18,7 @@ type FileInfo struct {
 	FormattedSize string
 	Type          string
 	Content       string
+	TimeUploaded  string
 }
 
 type TemplateData struct {

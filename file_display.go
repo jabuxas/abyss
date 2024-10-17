@@ -35,6 +35,7 @@ var extensions = map[string]string{
 func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 	tmpl := template.Must(template.ParseFiles("templates/files.html"))
 
+	fileStat, _ := os.Stat("." + file)
 	fileContent, _ := os.ReadFile("." + file)
 
 	fileInfo := FileInfo{
@@ -42,6 +43,9 @@ func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 		Path:    filepath.Join(app.url, file),
 		Type:    getType(file),
 		Content: string(fileContent),
+		TimeUploaded: fileStat.ModTime().
+			UTC().
+			Format("2006-01-02 15:04:05 UTC"),
 	}
 
 	if err := tmpl.Execute(w, fileInfo); err != nil {
