@@ -11,7 +11,25 @@ import (
 )
 
 func main() {
-	app := new(Application)
+	err := godotenv.Load()
+	if err != nil {
+		slog.Warn("no .env file detected, getting env from running process")
+	}
+
+	app := &Application{
+		auth: struct {
+			username string
+			password string
+		}{
+			username: os.Getenv("AUTH_USERNAME"),
+			password: os.Getenv("AUTH_PASSWORD"),
+		},
+		url:        os.Getenv("ABYSS_URL"),
+		key:        os.Getenv("UPLOAD_KEY"),
+		filesDir:   os.Getenv("ABYSS_FILEDIR"),
+		port:       os.Getenv("ABYSS_PORT"),
+		authUpload: os.Getenv("SHOULD_AUTH"),
+	}
 
 	parseEnv(app)
 
@@ -35,20 +53,6 @@ func main() {
 }
 
 func parseEnv(app *Application) {
-	err := godotenv.Load()
-	if err != nil {
-		slog.Warn("no .env file detected, getting env from running process")
-	}
-
-	app.auth.username = os.Getenv("AUTH_USERNAME")
-	app.auth.password = os.Getenv("AUTH_PASSWORD")
-	app.url = os.Getenv("ABYSS_URL")
-	app.key = os.Getenv("UPLOAD_KEY")
-	app.filesDir = os.Getenv("ABYSS_FILEDIR")
-	app.port = os.Getenv("ABYSS_PORT")
-
-	app.authText = os.Getenv("SHOULD_AUTH")
-
 	if app.auth.username == "" {
 		log.Fatal("basic auth username must be provided")
 	}
@@ -97,7 +101,7 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 
 	mux.HandleFunc("/files/", app.fileHandler)
 
-	if app.authText == "yes" {
+	if app.authUpload == "yes" {
 		mux.HandleFunc("/upload", BasicAuth(app.uploadHandler, app))
 		slog.Warn("text uploading through the browser will be restricted")
 	} else {

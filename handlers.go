@@ -23,7 +23,7 @@ type Application struct {
 	key              string
 	filesDir         string
 	port             string
-	authText         string
+	authUpload       string
 	lastUploadedFile string
 }
 
