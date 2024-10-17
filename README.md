@@ -1,11 +1,15 @@
 # abyss
 
-abyss is a basic (mostly) single user http server made for uploading files (logs, images) and then sharing them to the internet
+abyss is a basic and mostly single user http server written in go made for uploading files (logs, images) and then sharing them to the internet
 
-note: this is a project made for learning purposes, you should use other more mature projects if running in production. probably.
+<figure>
+ <img src="https://github.com/user-attachments/assets/eae42368-d8b5-4c42-ac8a-0e1486fcd0d4" alt="homepage"/>
+ <figcaption>this is abyss' default home page<figcaption/>
+</figure>
 
 ## table of contents
 
+- [features](#features)
 - [running abyss](#running)
   - [installing with docker](#docker)
   - [installing manually](#manual)
@@ -13,6 +17,15 @@ note: this is a project made for learning purposes, you should use other more ma
 - [theming](#theming)
 - [docs](#docs)
 - [todo list](#todo)
+- [more pictures](#pictures)
+
+## features
+
+- **file uploads**: supports uploading various file types, including images, videos, and documents.
+- **flexible media display**: automatically renders uploaded files on a webpage based on their type (images, pdfs, videos, or plain text).
+- **easily customizable interface**: allows for easy modification of color schemes and layout to suit specific design needs.
+- **syntax highlighting for code**: syntax highlighting available by default for code files, with support for multiple programming languages. (can be tweaked/changed and even removed)
+- **security considerations**: as it is single user, it's mostly secure but there are still some edges to sharpen
 
 ## running:
 
@@ -40,7 +53,11 @@ docker compose up -d # might be docker-compose depending on distro
 
 #### with curl
 
-- to upload your files with curl:
+- you can upload both with the main key and with jwt tokens
+
+##### main key
+
+- to upload your files with main key:
 
 ```bash
 curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:3235/
@@ -64,7 +81,7 @@ pst() {
     return 1
   fi
 
-  curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235
+  curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/
 
   if [[ -p /dev/stdin ]]; then
     rm "$file"
@@ -88,7 +105,7 @@ function pst
         set file "$argv[1]"
     end
 
-    curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235
+    curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/
 
     if command test -p /dev/stdin
         rm "$file"
@@ -97,6 +114,22 @@ end
 ```
 
 </details>
+
+##### with jwt tokens
+
+- you first need to generate them:
+
+```bash
+curl -u admin http://localhost:3235/token # you can also access the url in the browser directly
+```
+
+- the user will be the value of `$AUTH_USERNAME` and password the value of `$AUTH_PASSWORD`
+
+- then you use the token in place of the main key:
+
+```bash
+curl -F"file=@/path/to/file.jpg" -H "X-Auth: your-token" http://localhost:3235/
+```
 
 #### through the browser
 
@@ -132,3 +165,15 @@ end
 - [x] custom file displaying!!
 - [x] syntax highlighting
 - [ ] add rate limits
+
+## pictures
+
+<figure>
+  <img src="https://github.com/user-attachments/assets/32ce9b3a-8c0f-4bb5-bdcf-3a602e0c81e6"/>
+  <figcaption>this is abyss' default directory list<figcaption/>
+</figure>
+
+<figure>
+  <img src="https://github.com/user-attachments/assets/7072b227-9972-4c2a-a9f3-384d2efb4fe1"/>
+  <figcaption>this is abyss' default file presentation<figcaption/>
+</figure>
