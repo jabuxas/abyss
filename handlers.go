@@ -104,7 +104,7 @@ func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "No new files uploaded yet", http.StatusNotFound)
 		return
 	}
-	http.ServeFile(w, r, app.lastUploadedFile)
+	DisplayFile(app, "/"+app.lastUploadedFile, w)
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
