@@ -187,6 +187,11 @@
             border-radius: 10px;
             border: 3px solid #2e2e2e;
         }
+
+        a {
+            color: #0288d1;
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -204,6 +209,11 @@
             <source src="{{.Name}}" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
+        {{else}}
+        <p>
+            Couldn't detect file from extension, visit
+            <a href="http://{{.Path}}">this link</a> to see/download your file.
+        </p>
         {{end}}
     </div>
     <footer>file uploaded in {{.TimeUploaded}}</footer>

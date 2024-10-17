@@ -29,7 +29,7 @@ var extensions = map[string]string{
 	".log": "text", ".txt": "text", ".csv": "text",
 	".json": "text", ".env": "text", ".sum": "text",
 	".gitignore": "text", ".dockerfile": "text", ".Makefile": "text",
-	".rst": "text",
+	".rst": "text", ".el": "text",
 }
 
 func DisplayFile(app *Application, file string, w http.ResponseWriter) {
@@ -59,5 +59,5 @@ func getType(file string) string {
 	if fileType, exists := extensions[extension]; exists {
 		return fileType
 	}
-	return "text"
+	return "unknown"
 }
