@@ -9,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type FileInfo struct {
@@ -27,7 +29,31 @@ type TemplateData struct {
 }
 
 func CheckAuth(r *http.Request, key string) bool {
-	return r.Header.Get("X-Auth") == key
+	receivedKey := r.Header.Get("X-Auth")
+	if receivedKey == key {
+		return true
+	} else if err := validateToken(receivedKey, key); err == nil {
+		return true
+	}
+	return false
+}
+
+func validateToken(tokenString, key string) error {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(key), nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return nil
+	} else {
+		return fmt.Errorf("invalid token")
+	}
 }
 
 func FormatFileSize(size int64) string {

@@ -93,6 +93,8 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 
 	mux.HandleFunc("/last", app.lastUploadedHandler)
 
+	mux.HandleFunc("/token", BasicAuth(app.createTokenHandler, app))
+
 	mux.HandleFunc("/files/", app.fileHandler)
 
 	if app.authText == "yes" {

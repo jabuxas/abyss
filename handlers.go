@@ -9,6 +9,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Application struct {
@@ -197,4 +200,18 @@ func (app *Application) publicURL(file io.Reader, extension string) string {
 	app.lastUploadedFile = filepath
 
 	return filename
+}
+
+func (app *Application) createTokenHandler(w http.ResponseWriter, r *http.Request) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp": time.Now().Add(time.Hour * 2).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(app.key))
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, "%s", tokenString)
 }
