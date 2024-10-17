@@ -129,4 +129,5 @@ end
 - [x] add file extension in its name
 - [x] login prompt when accessing /tree
 - [x] home page
+- [x] custom file displaying!!
 - [ ] add rate limits
