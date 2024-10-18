@@ -26,10 +26,11 @@ abyss is a basic and mostly single user http server written in go made for uploa
 - **easily customizable interface**: allows for easy modification of color schemes and layout to suit specific design needs.
 - **syntax highlighting for code**: syntax highlighting available by default for code files, with support for multiple programming languages. (can be tweaked/changed and even removed)
 - **security considerations**: as it is single user, it's mostly secure but there are still some edges to sharpen
+- **easy and fast setup**: assets files are baked into the binary, so setting it up is as easy as compiling/grabbing a binary from gh actions and running it!
 
 ## running
 
-#### setting it up
+#### (recommended) setting it up
 
 - clone the repository and cd into it:
 
@@ -52,11 +53,16 @@ docker compose up -d # might be docker-compose depending on distro
 
 ### directly
 
-- to run it manually, build it with `go build -o abyss` and run:
+- to run it manually, build it with `go build -o abyss` or grab a binary from github actions and run:
 
 ```bash
 ./abyss
 ```
+
+- you will need to either:
+  - create a `.env` file in `$(pwd)` and set up the necessary variables as in [docs](#docs)
+  - run it with the variables prepended: `AUTH_USERNAME=admin AUTH_PASSWORD=admin ./abyss` (example)
+- and then (hopefully) create a service that does that automatically and runs `abyss`
 
 ## uploading
 
@@ -166,14 +172,14 @@ curl -F"file=@/path/to/file.jpg" -H "X-Auth: your-token" http://localhost:3235/
 
 - [x] add upload of logs funcionality (like 0x0.st)
 - [x] add docker easy setup
-- ~~add db for tracking of file names~~ (dont need that)
 - [x] add file browser (like file://)
 - [x] add file extension in its name
 - [x] login prompt when accessing /tree
 - [x] home page
 - [x] custom file displaying!!
 - [x] syntax highlighting
-- [ ] add rate limits
+- [ ] create example services (openrc/systemd)
+- [ ] distribute it in some distros
 
 ## pictures
 
@@ -183,6 +189,6 @@ curl -F"file=@/path/to/file.jpg" -H "X-Auth: your-token" http://localhost:3235/
 </figure>
 
 <figure>
-  <img src="https://github.com/user-attachments/assets/7072b227-9972-4c2a-a9f3-384d2efb4fe1"/>
+<img src="https://github.com/user-attachments/assets/e842e481-13ee-464b-be43-5ba0f4bb43ec"/>
   <figcaption>this is abyss' default file presentation<figcaption/>
 </figure>
