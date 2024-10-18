@@ -1,9 +1,11 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -26,6 +28,12 @@ type Application struct {
 	authUpload       string
 	lastUploadedFile string
 }
+
+//go:embed static/**
+var static embed.FS
+
+//go:embed templates/dirlist.html
+var treeTemplate embed.FS
 
 func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Request) {
 	dir := app.filesDir + r.URL.Path
@@ -56,7 +64,13 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 		})
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/dirlist.html"))
+	var tmpl *template.Template
+
+	if _, err := os.Stat("./templates/dirlist.html"); err == nil {
+		tmpl = template.Must(template.ParseFiles("templates/dirlist.html"))
+	} else {
+		tmpl = template.Must(template.ParseFS(treeTemplate, "templates/dirlist.html"))
+	}
 	templateData := TemplateData{
 		Files: fileInfos,
 		URL:   app.url,
@@ -81,6 +95,12 @@ func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := os.Stat(app.filesDir); err != nil {
+		if err := os.Mkdir(app.filesDir, 0750); err != nil {
+			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
+		}
+	}
+
 	if r.Method == http.MethodPost {
 		app.uploadHandler(w, r)
 		return
@@ -99,7 +119,12 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.StripPrefix("/", http.FileServer(http.Dir("./static"))).ServeHTTP(w, r)
+	if _, err := os.Stat("./static"); err == nil {
+		http.StripPrefix("/", http.FileServer(http.Dir("./static"))).ServeHTTP(w, r)
+	} else {
+		fs, _ := fs.Sub(static, "static")
+		http.StripPrefix("/", http.FileServer(http.FS(fs))).ServeHTTP(w, r)
+	}
 }
 
 func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Request) {
@@ -111,11 +136,6 @@ func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
-	if _, err := os.Stat(app.filesDir); err != nil {
-		if err := os.Mkdir(app.filesDir, 0750); err != nil {
-			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
-		}
-	}
 	if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
 		app.formHandler(w, r)
 	} else if strings.Split(contentType, ";")[0] == "multipart/form-data" {

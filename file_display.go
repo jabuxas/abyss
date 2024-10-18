@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -32,8 +33,17 @@ var extensions = map[string]string{
 	".rst": "text", ".el": "text", ".fish": "text",
 }
 
+//go:embed templates/files.html
+var filesTemplate embed.FS
+
 func DisplayFile(app *Application, file string, w http.ResponseWriter) {
-	tmpl := template.Must(template.ParseFiles("templates/files.html"))
+	var tmpl *template.Template
+
+	if _, err := os.Stat("./templates/dirlist.html"); err == nil {
+		tmpl = template.Must(template.ParseFiles("templates/files.html"))
+	} else {
+		tmpl = template.Must(template.ParseFS(filesTemplate, "templates/files.html"))
+	}
 
 	fileStat, _ := os.Stat("." + file)
 	fileContent, _ := os.ReadFile("." + file)
