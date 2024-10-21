@@ -119,3 +119,13 @@ func BasicAuth(next http.HandlerFunc, app *Application) http.HandlerFunc {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	})
 }
+
+func ResponseURLHandler(w http.ResponseWriter, url, filename string) {
+	pasteURL := fmt.Sprintf("http://%s/%s\n", url, filename)
+
+	w.Header().Set("Location", pasteURL)
+
+	w.WriteHeader(http.StatusCreated)
+
+	fmt.Fprintf(w, "%s", pasteURL)
+}
