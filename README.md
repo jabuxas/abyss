@@ -34,9 +34,9 @@ abyss is a basic and mostly single user http server written in go made for uploa
 
 - clone the repository and cd into it:
 
-```bash
-git clone https://github.com/jabuxas/abyss.git --depth 1 && cd abyss
-```
+  ```bash
+  git clone https://github.com/jabuxas/abyss.git --depth 1 && cd abyss
+  ```
 
 - then run `./generate_config.sh` to setup the necessary environment variables
 - after that, you can use either docker or run it directly
@@ -45,9 +45,9 @@ git clone https://github.com/jabuxas/abyss.git --depth 1 && cd abyss
 
 - to run with docker, you can use the `docker-compose.yml` file available in this repo. to do so, run:
 
-```bash
-docker compose up -d # might be docker-compose depending on distro
-```
+  ```bash
+  docker compose up -d # might be docker-compose depending on distro
+  ```
 
 - you can optionally use the [docker image](https://git.jabuxas.xyz/jabuxas/-/packages/container/abyss/latest) directly and set it up how you want
 
@@ -55,9 +55,9 @@ docker compose up -d # might be docker-compose depending on distro
 
 - to run it manually, build it with `go build -o abyss` or grab a binary from github actions and run:
 
-```bash
-./abyss
-```
+  ```bash
+  ./abyss
+  ```
 
 - you will need to either:
   - create a `.env` file in `$(pwd)` and set up the necessary variables as in [docs](#docs)
@@ -74,77 +74,77 @@ docker compose up -d # might be docker-compose depending on distro
 
 - to upload your files with main key:
 
-```bash
-curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:3235/
-```
+  ```bash
+  curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:3235/
+  ```
 
 - you should probably create an `alias` or a `function` to do this automatically for you.
-<details>
-<summary>click for an example for bash/zsh:</summary>
+  <details>
+  <summary>click for an example for bash/zsh:</summary>
 
-```bash
-pst() {
-  local file
+  ```bash
+  pst() {
+    local file
 
-  if [[ -p /dev/stdin ]]; then
-    file=$(mktemp)
-    cat > "$file"
-  elif [[ -n $1 ]]; then
-    file="$1"
-  else
-    echo "Usage: pst [file]"
-    return 1
-  fi
-
-  curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/
-
-  if [[ -p /dev/stdin ]]; then
-    rm "$file"
-  fi
-}
-```
-
-</details>
-
-<details>
-<summary>click for an example for fish shell:</summary>
-
-```bash
-function pst
-    set -l file
-
-    if command test -p /dev/stdin
-        set file "/tmp/tmp.txt"
-        cat > $file
-    else if test -n "$argv[1]"
-        set file "$argv[1]"
-    end
+    if [[ -p /dev/stdin ]]; then
+      file=$(mktemp)
+      cat > "$file"
+    elif [[ -n $1 ]]; then
+      file="$1"
+    else
+      echo "Usage: pst [file]"
+      return 1
+    fi
 
     curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/
 
-    if command test -p /dev/stdin
-        rm "$file"
-    end
-end
-```
+    if [[ -p /dev/stdin ]]; then
+      rm "$file"
+    fi
+  }
+  ```
 
-</details>
+  </details>
+
+  <details>
+  <summary>click for an example for fish shell:</summary>
+
+  ```bash
+  function pst
+      set -l file
+
+      if command test -p /dev/stdin
+          set file "/tmp/tmp.txt"
+          cat > $file
+      else if test -n "$argv[1]"
+          set file "$argv[1]"
+      end
+
+      curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/
+
+      if command test -p /dev/stdin
+          rm "$file"
+      end
+  end
+  ```
+
+  </details>
 
 ##### with jwt tokens
 
 - you first need to generate them:
 
-```bash
-curl -u admin http://localhost:3235/token # you can also access the url in the browser directly
-```
+  ```bash
+  curl -u admin http://localhost:3235/token # you can also access the url in the browser directly
+  ```
 
 - the user will be the value of `$AUTH_USERNAME` and password the value of `$AUTH_PASSWORD`
 
 - then you use the token in place of the main key:
 
-```bash
-curl -F"file=@/path/to/file.jpg" -H "X-Auth: your-token" http://localhost:3235/
-```
+  ```bash
+  curl -F"file=@/path/to/file.jpg" -H "X-Auth: your-token" http://localhost:3235/
+  ```
 
 #### through the browser
 
