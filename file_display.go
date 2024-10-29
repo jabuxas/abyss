@@ -17,6 +17,8 @@ var extensions = map[string]string{
 
 	".png": "image", ".jpg": "image", ".jpeg": "image", ".webp": "image",
 
+	".mp3": "audio", ".aac": "audio", ".wav": "audio", ".flac": "audio", ".ogg": "audio",
+
 	".sh": "text", ".bash": "text", ".zsh": "text",
 	".bat": "text", ".cmd": "text", ".ps1": "text",
 	".ini": "text", ".cfg": "text", ".conf": "text",

@@ -213,12 +213,14 @@
             <source src="{{.Name}}" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
-        {{else}}
-        <p>
-            Couldn't detect file from extension, visit
-            <a href="http://{{.Path}}">this link</a> to see/download your file.
-        </p>
-        {{end}}
+        {{else if eq .Type "audio"}}
+        <audio controls src="{{.Name}}"><audio />
+            {{else}}
+            <p>
+                Couldn't detect file from extension, visit
+                <a href="http://{{.Path}}">this link</a> to see/download your file.
+            </p>
+            {{end}}
     </div>
     <footer>file uploaded in {{.TimeUploaded}}</footer>
 </body>
