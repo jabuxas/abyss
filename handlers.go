@@ -160,6 +160,10 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 
 	filename := app.publicURL(file, ".txt")
 
+	if len(r.Form["secret"]) == 0 {
+		filename = filename[:8]
+	}
+
 	// reopening file because hash consumes it
 	file, err = os.Open("/tmp/file.txt")
 	if err != nil {
@@ -196,6 +200,10 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 
 	filename := app.publicURL(file, filepath.Ext(handler.Filename))
 
+	if len(r.Form["secret"]) == 0 {
+		filename = filename[:8]
+	}
+
 	// reopen the file for copying, as the hash process consumed the file reader
 	file, _, err = r.FormFile("file")
 	if err != nil {
@@ -204,8 +212,7 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	err = SaveFile(app.lastUploadedFile, file)
-	if err != nil {
+	if err = SaveFile(app.lastUploadedFile, file); err != nil {
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
 	}
 
