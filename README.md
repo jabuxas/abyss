@@ -78,6 +78,8 @@ abyss is a basic and mostly single user http server written in go made for uploa
   curl -F "file=@/path/to/file" -H "X-Auth: "$(cat /path/to/.key) http://localhost:3235/
   ```
 
+- it is also possible to add a `-Fsecret=` to your POST to make filenames bigger and harder to guess.
+
 - you should probably create an `alias` or a `function` to do this automatically for you.
   <details>
   <summary>click for an example for bash/zsh:</summary>
