@@ -67,17 +67,19 @@ func FormatFileSize(size int64) string {
 	return fmt.Sprintf("%.2f GB", float64(size)/(1024*1024*1024))
 }
 
-func HashFile(file io.Reader, extension string) (string, error) {
+func HashFile(file io.Reader, extension string, full bool) (string, error) {
 	hasher := md5.New()
 	if _, err := io.Copy(hasher, file); err != nil {
 		return "", err
 	}
 
-	sha1Hash := hex.EncodeToString(hasher.Sum(nil))[:8]
-
+	sha1Hash := hex.EncodeToString(hasher.Sum(nil))
 	filename := fmt.Sprintf("%s%s", sha1Hash, extension)
-
-	return filename, nil
+	if full {
+		return filename, nil
+	} else {
+		return fmt.Sprintf("%s%s", sha1Hash[:8], extension), nil
+	}
 }
 
 func SaveFile(name string, file io.Reader) error {

@@ -158,11 +158,11 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	filename := app.publicURL(file, ".txt")
-
+	full := true
 	if len(r.Form["secret"]) == 0 {
-		filename = filename[:8]
+		full = false
 	}
+	filename := app.publicURL(file, ".txt", full)
 
 	// reopening file because hash consumes it
 	file, err = os.Open("/tmp/file.txt")
@@ -198,11 +198,11 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	filename := app.publicURL(file, filepath.Ext(handler.Filename))
-
+	full := true
 	if len(r.Form["secret"]) == 0 {
-		filename = filename[:8]
+		full = false
 	}
+	filename := app.publicURL(file, filepath.Ext(handler.Filename), full)
 
 	// reopen the file for copying, as the hash process consumed the file reader
 	file, _, err = r.FormFile("file")
@@ -219,8 +219,8 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	ResponseURLHandler(w, app.url, filename)
 }
 
-func (app *Application) publicURL(file io.Reader, extension string) string {
-	filename, _ := HashFile(file, extension)
+func (app *Application) publicURL(file io.Reader, extension string, full bool) string {
+	filename, _ := HashFile(file, extension, full)
 
 	filepath := filepath.Join(app.filesDir, filename)
 
