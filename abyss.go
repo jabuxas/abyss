@@ -103,9 +103,9 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 
 	if app.authUpload == "yes" {
 		mux.HandleFunc("/upload", BasicAuth(app.uploadHandler, app))
-		slog.Warn("text uploading through the browser will be restricted")
+		slog.Warn("text uploading will be restricted")
 	} else {
 		mux.HandleFunc("/upload", app.uploadHandler)
-		slog.Warn("text uploading through the browser will NOT be restricted")
+		slog.Warn("text uploading will NOT be restricted")
 	}
 }

@@ -168,7 +168,7 @@ abyss is a basic and mostly single user http server written in go made for uploa
 - `UPLOAD_KEY`: this is key checked when uploading files. if the key doesn't match with server's one, then it refuses uploading.
 - `ABYSS_FILEDIR`: this points to the directory where abyss will save the uploads to. defaults to `./files`
 - `ABYSS_PORT`: this is the port the server will run on. safe to leave empty. defaults to 3235
-- `SHOULD_AUTH`: if it is `yes`, then to upload text through the browser you will need authentication (same auth as `/tree`), any value other than that and upload is auth-less
+- `SHOULD_AUTH`: if it is `yes`, then to upload text you will need authentication (same auth as `/tree`), any value other than that and upload is authless
 
 ## todo:
 

@@ -43,7 +43,7 @@ AUTH_USERNAME=$AUTH_USERNAME
 # This is the password of the user for accessing /tree
 AUTH_PASSWORD=$AUTH_PASSWORD
 
-# This is whether you need a password to upload text through the browser
+# This is whether you need a password to upload text (through browser or curl)
 SHOULD_AUTH=$SHOULD_AUTH
 
 # This is the key needed to make uploads. Include it as X-Auth in curl.
