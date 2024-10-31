@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -73,12 +74,12 @@ func HashFile(file io.Reader, extension string, full bool) (string, error) {
 		return "", err
 	}
 
-	sha1Hash := hex.EncodeToString(hasher.Sum(nil))
+	sha1Hash := strings.ToUpper(hex.EncodeToString(hasher.Sum(nil)))
 	filename := fmt.Sprintf("%s%s", sha1Hash, extension)
 	if full {
 		return filename, nil
 	} else {
-		return fmt.Sprintf("%s%s", sha1Hash[:8], extension), nil
+		return fmt.Sprintf("%s%s", sha1Hash[:5], extension), nil
 	}
 }
 
