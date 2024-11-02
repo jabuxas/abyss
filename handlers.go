@@ -137,7 +137,11 @@ func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Reque
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
-		app.formHandler(w, r)
+		if app.authUpload == "yes" {
+			BasicAuth(app.formHandler, app)(w, r)
+		} else {
+			app.formHandler(w, r)
+		}
 	} else if strings.Split(contentType, ";")[0] == "multipart/form-data" {
 		app.curlHandler(w, r)
 	} else {
