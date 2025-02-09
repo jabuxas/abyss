@@ -180,7 +180,7 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
 	}
 
-	ResponseURLHandler(w, app.url, filename)
+	ResponseURLHandler(r, w, app.url, filename)
 }
 
 func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
@@ -220,7 +220,7 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
 	}
 
-	ResponseURLHandler(w, app.url, filename)
+	ResponseURLHandler(r, w, app.url, filename)
 }
 
 func (app *Application) publicURL(file io.Reader, extension string, full bool) string {
