@@ -1,6 +1,6 @@
 # abyss
 
-abyss is a basic and mostly single user http server written in go made for uploading files (logs, images) and then sharing them to the internet
+abyss is a basic and _mostly_ single user pastebin server written in go made for uploading files (logs, images) and then sharing them to the internet
 
 <figure>
  <img src="https://github.com/user-attachments/assets/eae42368-d8b5-4c42-ac8a-0e1486fcd0d4" alt="homepage"/>
