@@ -95,7 +95,7 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 		),
 	)
 
-	mux.HandleFunc("/last", app.lastUploadedHandler)
+	mux.HandleFunc("/last", BasicAuth(app.lastUploadedHandler, app))
 
 	mux.HandleFunc("/token", BasicAuth(app.createTokenHandler, app))
 
