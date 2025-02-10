@@ -49,7 +49,7 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
   docker compose up -d # might be docker-compose depending on distro
   ```
 
-- you can optionally use the [docker image](https://git.jabuxas.xyz/jabuxas/-/packages/container/abyss/latest) directly and set it up how you want
+- you can optionally use the [docker image](https://git.jabuxas.com/jabuxas/-/packages/container/abyss/latest) directly and set it up how you want
 
 ### directly
 
