@@ -133,7 +133,7 @@ func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "No new files uploaded yet", http.StatusNotFound)
 		return
 	}
-	DisplayFile(app, "/"+app.lastUploadedFile, w)
+	DisplayFile(app, filepath.Join("/raw", filepath.Base(app.lastUploadedFile)), w)
 }
 
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
