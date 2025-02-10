@@ -110,7 +110,7 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	name := filepath.Base(r.URL.Path)
 	realPath := filepath.Join(app.filesDir, name)
 
-	if !filepath.IsLocal(realPath) {
+	if !filepath.IsLocal(realPath) || strings.Contains(r.URL.Path, filepath.Clean(app.filesDir)) {
 		http.Error(w, "Wrong url", http.StatusBadRequest)
 		return
 	}
