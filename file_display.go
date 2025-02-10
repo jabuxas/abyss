@@ -47,8 +47,10 @@ func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 		tmpl = template.Must(template.ParseFS(filesTemplate, "templates/files.html"))
 	}
 
-	fileStat, _ := os.Stat("." + file)
-	fileContent, _ := os.ReadFile("." + file)
+	realPath := filepath.Join(app.filesDir, filepath.Base(file))
+
+	fileStat, _ := os.Stat("./" + realPath)
+	fileContent, _ := os.ReadFile("./" + realPath)
 
 	fileInfo := FileInfo{
 		Name:    file,

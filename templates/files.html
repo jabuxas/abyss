@@ -133,6 +133,10 @@
             padding: 10px;
         }
 
+        header {
+            display: flex;
+        }
+
         .content {
             flex-grow: 1;
             display: flex;
@@ -193,14 +197,31 @@
         }
 
         a {
-            color: #0288d1;
+            color: #d4d4d4;
             text-decoration: none;
+            filter: brightness(0.7);
+            transition: filter 0.2s;
+        }
+
+        a:hover {
+            filter: brightness(1)
+        }
+
+        .path {
+            position: relative;
+            margin: 0 auto;
+            left: -1.85%;
         }
     </style>
 </head>
 
 <body>
-    <header>{{.Path}}</header>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+        </nav>
+        <a href="{{.Name}}" class="path">{{.Path}}</a>
+    </header>
     <div class="content">
         {{if eq .Type "text"}}
         <pre>{{.Content}}</pre>

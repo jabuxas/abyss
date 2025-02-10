@@ -81,15 +81,16 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
-	path := fmt.Sprintf(".%s", filepath.Clean(r.URL.Path))
+	path := fmt.Sprintf("%s", filepath.Base(r.URL.Path))
+	realPath := filepath.Join(app.filesDir, path)
 
-	if !filepath.IsLocal(path) {
+	if !filepath.IsLocal(realPath) {
 		http.Error(w, "Wrong url", http.StatusBadRequest)
 		return
 	}
 
-	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
-		http.ServeFile(w, r, path)
+	if fileInfo, err := os.Stat(realPath); err == nil && !fileInfo.IsDir() {
+		http.ServeFile(w, r, realPath)
 		return
 	}
 }
@@ -106,16 +107,16 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := filepath.Clean(r.URL.Path)
-	path := filepath.Join(app.filesDir, name)
+	name := filepath.Base(r.URL.Path)
+	realPath := filepath.Join(app.filesDir, name)
 
-	if !filepath.IsLocal(path) {
+	if !filepath.IsLocal(realPath) {
 		http.Error(w, "Wrong url", http.StatusBadRequest)
 		return
 	}
 
-	if fileInfo, err := os.Stat(path); err == nil && !fileInfo.IsDir() {
-		DisplayFile(app, "/"+path, w)
+	if fileInfo, err := os.Stat(realPath); err == nil && !fileInfo.IsDir() {
+		DisplayFile(app, filepath.Join("/raw", name), w)
 		return
 	}
 
