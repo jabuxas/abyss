@@ -99,5 +99,5 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 
 	mux.HandleFunc("/token", BasicAuth(app.createTokenHandler, app))
 
-	mux.HandleFunc("/files/", app.fileHandler)
+	mux.HandleFunc("/raw/", app.fileHandler)
 }
