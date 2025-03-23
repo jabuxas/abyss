@@ -1,6 +1,6 @@
 services:
   paste:
-    image: git.jabuxas.xyz/jabuxas/abyss:latest
+    image: git.jabuxas.com/jabuxas/abyss:latest
     ports:
       - "3235:3235"
     volumes:
