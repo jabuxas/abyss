@@ -7,9 +7,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -133,4 +136,48 @@ func ResponseURLHandler(r *http.Request, w http.ResponseWriter, url, filename st
 	w.Header().Set("Location", pasteURL)
 
 	fmt.Fprintf(w, "%s", pasteURL)
+}
+
+const (
+	green  = "\033[32m"
+	blue   = "\033[34m"
+	yellow = "\033[33m"
+	red    = "\033[31m"
+	reset  = "\033[0m"
+)
+
+func LogHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		x, err := httputil.DumpRequest(r, true)
+		if err != nil {
+			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+			return
+		}
+
+		fn(w, r)
+
+		duration := time.Since(start)
+
+		methodColor := map[string]string{
+			"GET":    blue,
+			"POST":   green,
+			"PUT":    yellow,
+			"DELETE": red,
+		}[r.Method]
+		if methodColor == "" {
+			methodColor = reset
+		}
+
+		fmt.Printf("%s%s%-6s%s %s => %s(%s)\n",
+			reset, methodColor, r.Method, reset, r.URL.Path, green, duration,
+		)
+
+		slog.Debug("Request Details",
+			"method", r.Method,
+			"url", r.URL.String(),
+			"headers", r.Header,
+			"body", string(x),
+		)
+	}
 }

@@ -16,6 +16,15 @@ func main() {
 		slog.Warn("no .env file detected, getting env from running process")
 	}
 
+	if os.Getenv("DEBUG") == "1" {
+		// start logging
+		logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
+
+		slog.SetDefault(logger)
+	}
+
 	app := &Application{
 		auth: struct {
 			username string
@@ -85,19 +94,19 @@ func parseEnv(app *Application) {
 }
 
 func setupHandlers(mux *http.ServeMux, app *Application) {
-	mux.HandleFunc("/", app.indexHandler)
+	mux.HandleFunc("/", LogHandler(app.indexHandler))
 
 	mux.Handle(
 		"/tree/",
 		http.StripPrefix(
 			"/tree",
-			BasicAuth(app.fileListingHandler, app),
+			LogHandler(BasicAuth(app.fileListingHandler, app)),
 		),
 	)
 
-	mux.HandleFunc("/last", BasicAuth(app.lastUploadedHandler, app))
+	mux.HandleFunc("/last", LogHandler(BasicAuth(app.lastUploadedHandler, app)))
 
-	mux.HandleFunc("/token", BasicAuth(app.createTokenHandler, app))
+	mux.HandleFunc("/token", LogHandler(BasicAuth(app.createTokenHandler, app)))
 
-	mux.HandleFunc("/raw/", app.fileHandler)
+	mux.HandleFunc("/raw/", LogHandler(app.fileHandler))
 }
