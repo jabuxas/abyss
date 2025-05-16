@@ -1,14 +1,16 @@
 services:
   paste:
-    image: git.jabuxas.com/jabuxas/abyss:latest
+    image: ghcr.io/jabuxas/abyss:latest
     ports:
       - "3235:3235"
     volumes:
       - ./files:/files
+      # You can customize the default by overriding the templates
       # - ./dev/home:/static:ro
       # - ./dev/templates:/templates:ro
     env_file:
       - .env
+    # in case big files
     tmpfs:
       - /tmp
     restart: unless-stopped
