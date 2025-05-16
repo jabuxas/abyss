@@ -7,6 +7,16 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
  <figcaption>this is abyss' default home page<figcaption/>
 </figure>
 
+<figure>
+  <img src="https://github.com/user-attachments/assets/32ce9b3a-8c0f-4bb5-bdcf-3a602e0c81e6"/>
+  <figcaption>this is abyss' default directory list<figcaption/>
+</figure>
+
+<figure>
+<img src="https://github.com/user-attachments/assets/e842e481-13ee-464b-be43-5ba0f4bb43ec"/>
+  <figcaption>this is abyss' default file presentation<figcaption/>
+</figure>
+
 ## table of contents
 
 - [features](#features)
@@ -17,7 +27,6 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
 - [theming](#theming)
 - [docs](#docs)
 - [todo list](#todo)
-- [more pictures](#pictures)
 
 ## features
 
@@ -182,15 +191,3 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
 - [x] syntax highlighting
 - [ ] create example services (openrc/systemd)
 - [ ] distribute it in some distros
-
-## pictures
-
-<figure>
-  <img src="https://github.com/user-attachments/assets/32ce9b3a-8c0f-4bb5-bdcf-3a602e0c81e6"/>
-  <figcaption>this is abyss' default directory list<figcaption/>
-</figure>
-
-<figure>
-<img src="https://github.com/user-attachments/assets/e842e481-13ee-464b-be43-5ba0f4bb43ec"/>
-  <figcaption>this is abyss' default file presentation<figcaption/>
-</figure>
