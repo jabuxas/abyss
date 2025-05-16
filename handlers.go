@@ -183,7 +183,7 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
 	}
 
-	ResponseURLHandler(r, w, app.url, filename)
+	http.Redirect(w, r, fmt.Sprintf("http://%s/%s", app.url, filename), http.StatusSeeOther)
 }
 
 func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
