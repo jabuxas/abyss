@@ -10,7 +10,7 @@ services:
       # - ./dev/templates:/templates:ro
     env_file:
       - .env
-    # in case big files
     tmpfs:
+      # in case big files
       - /tmp
     restart: unless-stopped

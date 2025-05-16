@@ -10,7 +10,10 @@ if [ -z $ABYSS_FILEDIR ]; then
     ABYSS_FILEDIR="./files"
 fi
 
-read -p "Server port - this is the port the server will run on; type just the port number. []: " -e ABYSS_PORT
+read -p "Server port - this is the port the server will run on; type just the port number. [3235]: " -e ABYSS_PORT
+if [ -z $ABYSS_PORT ]; then
+    ABYSS_PORT="3235"
+fi
 
 read -p "Auth username - this is the username to access /tree (show all uploaded files) [admin]: " -e AUTH_USERNAME
 if [ -z $AUTH_USERNAME ]; then
