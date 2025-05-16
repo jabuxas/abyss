@@ -153,7 +153,9 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
-	if err := os.WriteFile("/tmp/file.txt", []byte(content), 0666); err != nil {
+	normalized := strings.ReplaceAll(content, "\r\n", "\n")
+
+	if err := os.WriteFile("/tmp/file.txt", []byte(normalized), 0666); err != nil {
 		http.Error(w, "Couldn't parse content body", http.StatusNoContent)
 	}
 
