@@ -139,9 +139,9 @@ func (app *Application) lastUploadedHandler(w http.ResponseWriter, r *http.Reque
 func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if contentType := r.Header.Get("Content-Type"); contentType == "application/x-www-form-urlencoded" {
 		if app.authUpload == "yes" {
-			BasicAuth(app.formHandler, app)(w, r)
+			BasicAuth(app.formUploadHandler, app)(w, r)
 		} else {
-			app.formHandler(w, r)
+			app.formUploadHandler(w, r)
 		}
 	} else if strings.Split(contentType, ";")[0] == "multipart/form-data" {
 		app.curlHandler(w, r)
@@ -150,7 +150,7 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) formUploadHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	normalized := strings.ReplaceAll(content, "\r\n", "\n")
@@ -169,7 +169,12 @@ func (app *Application) formHandler(w http.ResponseWriter, r *http.Request) {
 	if len(r.Form["secret"]) == 0 {
 		full = false
 	}
-	filename := app.publicURL(file, ".txt", full)
+
+	filename, _ := HashFile(file, ".txt", full)
+
+	// set as lastUploadedFile
+	filepath := filepath.Join(app.filesDir, filename)
+	app.lastUploadedFile = filepath
 
 	// reopening file because hash consumes it
 	file, err = os.Open("/tmp/file.txt")
@@ -209,7 +214,12 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	if len(r.Form["secret"]) == 0 {
 		full = false
 	}
-	filename := app.publicURL(file, filepath.Ext(handler.Filename), full)
+
+	filename, _ := HashFile(file, filepath.Ext(handler.Filename), full)
+
+	// set as lastUploadedFile
+	filepath := filepath.Join(app.filesDir, filename)
+	app.lastUploadedFile = filepath
 
 	// reopen the file for copying, as the hash process consumed the file reader
 	file, _, err = r.FormFile("file")
@@ -226,17 +236,7 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	ResponseURLHandler(r, w, app.url, filename)
 }
 
-func (app *Application) publicURL(file io.Reader, extension string, full bool) string {
-	filename, _ := HashFile(file, extension, full)
-
-	filepath := filepath.Join(app.filesDir, filename)
-
-	app.lastUploadedFile = filepath
-
-	return filename
-}
-
-func (app *Application) createTokenHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) createJWTHandler(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour * 2).Unix(),
 	})

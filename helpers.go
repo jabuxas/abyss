@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -71,7 +72,7 @@ func FormatFileSize(size int64) string {
 	return fmt.Sprintf("%.2f GB", float64(size)/(1024*1024*1024))
 }
 
-func HashFile(file io.Reader, extension string, full bool) (string, error) {
+func HashFile(file io.Reader, extension string, fullHash bool) (string, error) {
 	hasher := md5.New()
 	if _, err := io.Copy(hasher, file); err != nil {
 		return "", err
@@ -79,7 +80,7 @@ func HashFile(file io.Reader, extension string, full bool) (string, error) {
 
 	sha1Hash := strings.ToUpper(hex.EncodeToString(hasher.Sum(nil)))
 	filename := fmt.Sprintf("%s%s", sha1Hash, extension)
-	if full {
+	if fullHash {
 		return filename, nil
 	} else {
 		return fmt.Sprintf("%s%s", sha1Hash[:5], extension), nil
