@@ -3,18 +3,22 @@
 abyss is a basic and _mostly_ single user pastebin server written in go made for uploading files (logs, images) and then sharing them to the internet
 
 <figure>
- <img src="https://github.com/user-attachments/assets/eae42368-d8b5-4c42-ac8a-0e1486fcd0d4" alt="homepage"/>
+ <img src="./imgs/home.png" alt="homepage"/>
  <figcaption>this is abyss' default home page<figcaption/>
 </figure>
 
-<figure>
-  <img src="https://github.com/user-attachments/assets/32ce9b3a-8c0f-4bb5-bdcf-3a602e0c81e6"/>
-  <figcaption>this is abyss' default directory list<figcaption/>
-</figure>
+---
 
 <figure>
-<img src="https://github.com/user-attachments/assets/e842e481-13ee-464b-be43-5ba0f4bb43ec"/>
+<img src="./imgs/file.png"/>
   <figcaption>this is abyss' default file presentation<figcaption/>
+</figure>
+
+---
+
+<figure>
+  <img src="./imgs/tree.png"/>
+  <figcaption>this is abyss' default directory list<figcaption/>
 </figure>
 
 ## table of contents
@@ -35,7 +39,7 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
 - **easily customizable interface**: allows for easy modification of color schemes and layout to suit specific design needs.
 - **syntax highlighting for code**: syntax highlighting available by default for code files, with support for multiple programming languages. (can be tweaked/changed and even removed)
 - **security considerations**: as it is single user, it's mostly secure but there are still some edges to sharpen
-- **easy and fast setup**: assets files are baked into the binary, so setting it up is as easy as compiling/grabbing a binary from gh actions and running it!
+- **easy and fast setup**: assets files are baked into the binary, so setting it up is as easy as compiling/grabbing a binary from gh actions (compile/docker) and running it!
 
 ## running
 
@@ -58,7 +62,7 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
   docker compose up -d # might be docker-compose depending on distro
   ```
 
-- you can optionally use the [docker image](https://git.jabuxas.com/jabuxas/-/packages/container/abyss/latest) directly and set it up how you want
+- you can optionally use the [docker image](https://github.com/jabuxas/abyss/pkgs/container/abyss) directly and set it up how you want
 
 ### directly
 
@@ -169,6 +173,7 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
   - otherwise you will need to clone this repository and edit `static/` and `templates/` manually, or recreate the structure.
 - same thing with templates in `templates/`
   - it is preferred to use `dev/` for that reason, since it is git-ignored and that way makes it easier if wanting to update regularly without making changes to the tree
+  - you can change the colorscheme by changing the xml at `templates/colorscheme.xml`
 
 ## docs
 
