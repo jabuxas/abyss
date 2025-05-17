@@ -65,10 +65,7 @@ func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 
 	var highlighted bytes.Buffer
 	if getType(file) == "text" {
-		lexer := lexers.Analyse(string(fileContent))
-		if lexer == nil {
-			lexer = lexers.Fallback
-		}
+		lexer := getLexer(file, fileContent)
 
 		iterator, err := lexer.Tokenise(nil, string(fileContent))
 		if err != nil {
@@ -156,6 +153,26 @@ func LoadStyle(app *Application) *chroma.Style {
 	}
 
 	return style
+}
+
+func getLexer(file string, fileContent []byte) chroma.Lexer {
+	ext := strings.ToLower(filepath.Ext(file))
+
+	var lexer chroma.Lexer
+	if ext == ".txt" {
+		lexer = lexers.Analyse(string(fileContent))
+	} else {
+		lexer = lexers.Match(file)
+		if lexer == nil {
+			lexer = lexers.Analyse(string(fileContent))
+		}
+	}
+
+	if lexer == nil {
+		lexer = lexers.Fallback
+	}
+
+	return lexer
 }
 
 func getType(file string) string {
