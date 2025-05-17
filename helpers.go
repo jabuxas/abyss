@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/md5"
-	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
@@ -36,10 +35,12 @@ func CheckAuth(r *http.Request, key string) bool {
 	receivedKey := r.Header.Get("X-Auth")
 	if receivedKey == key {
 		return true
-	} else if err := validateToken(receivedKey, key); err == nil {
-		return true
 	}
-	return false
+	if err := validateToken(receivedKey, key); err != nil {
+		slog.Warn("token validation failed", "error", err)
+		return false
+	}
+	return true
 }
 
 func validateToken(tokenString, key string) error {
@@ -53,11 +54,18 @@ func validateToken(tokenString, key string) error {
 		return err
 	}
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return nil
-	} else {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
 		return fmt.Errorf("invalid token")
 	}
+
+	if exp, ok := claims["exp"].(float64); ok {
+		if int64(exp) < time.Now().Unix() {
+			return fmt.Errorf("token expired")
+		}
+	}
+
+	return nil
 }
 
 func FormatFileSize(size int64) string {
@@ -77,12 +85,12 @@ func HashFile(file io.Reader, extension string, fullHash bool) (string, error) {
 		return "", err
 	}
 
-	sha1Hash := strings.ToUpper(hex.EncodeToString(hasher.Sum(nil)))
-	filename := fmt.Sprintf("%s%s", sha1Hash, extension)
+	hashed := strings.ToUpper(hex.EncodeToString(hasher.Sum(nil)))
+	filename := fmt.Sprintf("%s%s", hashed, extension)
 	if fullHash {
 		return filename, nil
 	} else {
-		return fmt.Sprintf("%s%s", sha1Hash[:5], extension), nil
+		return fmt.Sprintf("%s%s", hashed[:5], extension), nil
 	}
 }
 
@@ -103,17 +111,8 @@ func BasicAuth(next http.HandlerFunc, app *Application) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if ok {
-			// hash password received
-			usernameHash := sha256.Sum256([]byte(username))
-			passwordHash := sha256.Sum256([]byte(password))
-
-			// hash our password
-			expectedUsernameHash := sha256.Sum256([]byte(app.auth.username))
-			expectedPasswordHash := sha256.Sum256([]byte(app.auth.password))
-
-			// compare hashes
-			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
-			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
+			usernameMatch := subtle.ConstantTimeCompare([]byte(username), []byte(app.auth.username)) == 1
+			passwordMatch := subtle.ConstantTimeCompare([]byte(password), []byte(app.auth.password)) == 1
 
 			if usernameMatch && passwordMatch {
 				next.ServeHTTP(w, r)
@@ -121,8 +120,9 @@ func BasicAuth(next http.HandlerFunc, app *Application) http.HandlerFunc {
 			}
 		}
 
-		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8`)
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
 	})
 }
 
@@ -134,6 +134,7 @@ func ResponseURLHandler(r *http.Request, w http.ResponseWriter, url, filename st
 	pasteURL := fmt.Sprintf("%s://%s/%s\n", protocol, url, filename)
 
 	w.Header().Set("Location", pasteURL)
+	w.WriteHeader(http.StatusSeeOther)
 
 	fmt.Fprintf(w, "%s", pasteURL)
 }
