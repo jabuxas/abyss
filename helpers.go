@@ -147,16 +147,29 @@ const (
 	reset  = "\033[0m"
 )
 
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(status int) {
+	r.status = status
+	r.ResponseWriter.WriteHeader(status)
+}
+
 func LogHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+
+		// dump request early
 		x, err := httputil.DumpRequest(r, true)
 		if err != nil {
 			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 			return
 		}
 
-		fn(w, r)
+		sr := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+		fn(sr, r) // use wrapped writer to capture status
 
 		duration := time.Since(start)
 
@@ -170,8 +183,8 @@ func LogHandler(fn http.HandlerFunc) http.HandlerFunc {
 			methodColor = reset
 		}
 
-		fmt.Printf("%s%s%-6s%s %s => %s(%s)\n",
-			reset, methodColor, r.Method, reset, r.URL.Path, green, duration,
+		fmt.Printf("%s%s%-6s%s %s => %s(%s) status=%d\n",
+			reset, methodColor, r.Method, reset, r.URL.Path, green, duration, sr.status,
 		)
 
 		slog.Debug("Request Details",
@@ -179,6 +192,8 @@ func LogHandler(fn http.HandlerFunc) http.HandlerFunc {
 			"url", r.URL.String(),
 			"headers", r.Header,
 			"body", string(x),
+			"status", sr.status,
+			"duration", duration.String(),
 		)
 	}
 }
