@@ -2,9 +2,9 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"html/template"
-	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -35,12 +35,13 @@ var static embed.FS
 //go:embed templates/dirlist.html
 var treeTemplate embed.FS
 
-func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) listAllFilesHandler(w http.ResponseWriter, r *http.Request) {
 	dir := app.filesDir + r.URL.Path
 
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		slog.Error("failed to read directory", "dir", dir, "err", err)
+		http.Error(w, "Failed to read directory", http.StatusInternalServerError)
 		return
 	}
 
@@ -49,7 +50,8 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 		filePath := filepath.Join(dir, file.Name())
 		info, err := os.Stat(filePath)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			slog.Error("failed to stat file", "path", filePath, "err", err)
+			http.Error(w, "Failed to access file", http.StatusInternalServerError)
 			return
 		}
 
@@ -64,28 +66,30 @@ func (app *Application) fileListingHandler(w http.ResponseWriter, r *http.Reques
 		})
 	}
 
-	var tmpl *template.Template
-
-	if _, err := os.Stat("./templates/dirlist.html"); err == nil {
-		tmpl = template.Must(template.ParseFiles("templates/dirlist.html"))
-	} else {
+	// use embedded case error
+	tmpl, err := template.ParseFiles("templates/dirlist.html")
+	if err != nil {
 		tmpl = template.Must(template.ParseFS(treeTemplate, "templates/dirlist.html"))
 	}
+
 	templateData := TemplateData{
 		Files: fileInfos,
 		URL:   app.url,
 	}
+
 	if err := tmpl.Execute(w, templateData); err != nil {
-		slog.Warn(err.Error())
+		slog.Error("failed to execute template", "err", err, "data", templateData)
+		http.Error(w, "Template rendering failed", http.StatusInternalServerError)
 	}
 }
 
-func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) serveRawFileHandler(w http.ResponseWriter, r *http.Request) {
 	path := fmt.Sprintf("%s", filepath.Base(r.URL.Path))
 	realPath := filepath.Join(app.filesDir, path)
 
 	if !filepath.IsLocal(realPath) {
-		http.Error(w, "Wrong url", http.StatusBadRequest)
+		slog.Warn("non-local path detected", "path", realPath)
+		http.Error(w, "Invalid path", http.StatusBadRequest)
 		return
 	}
 
@@ -96,10 +100,16 @@ func (app *Application) fileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
-	if _, err := os.Stat(app.filesDir); err != nil {
-		if err := os.Mkdir(app.filesDir, 0750); err != nil {
+	if _, err := os.Stat(app.filesDir); errors.Is(err, os.ErrNotExist) {
+		if mkdirErr := os.Mkdir(app.filesDir, 0750); mkdirErr != nil {
+			slog.Error("failed to create storage directory", "dir", app.filesDir, "err", mkdirErr)
 			http.Error(w, "Error creating storage directory", http.StatusInternalServerError)
+			return
 		}
+	} else if err != nil {
+		slog.Error("failed to stat storage directory", "dir", app.filesDir, "err", err)
+		http.Error(w, "Error accessing storage directory", http.StatusInternalServerError)
+		return
 	}
 
 	if r.Method == http.MethodPost {
@@ -111,6 +121,7 @@ func (app *Application) indexHandler(w http.ResponseWriter, r *http.Request) {
 	realPath := filepath.Join(app.filesDir, name)
 
 	if !filepath.IsLocal(realPath) || strings.Contains(r.URL.Path, filepath.Clean(app.filesDir)) {
+		slog.Error("invalid file path detected", "url_path", r.URL.Path, "clean_name", name)
 		http.Error(w, "Wrong url", http.StatusBadRequest)
 		return
 	}
@@ -156,11 +167,13 @@ func (app *Application) formUploadHandler(w http.ResponseWriter, r *http.Request
 	normalized := strings.ReplaceAll(content, "\r\n", "\n")
 
 	if err := os.WriteFile("/tmp/file.txt", []byte(normalized), 0666); err != nil {
+		slog.Error("failed to write file", "error", err)
 		http.Error(w, "Couldn't parse content body", http.StatusNoContent)
 	}
 
 	file, err := os.Open("/tmp/file.txt")
 	if err != nil {
+		slog.Warn("file not found", "path", "/tmp/file.txt", "error", err)
 		http.Error(w, "Couldn't find file", http.StatusNotFound)
 	}
 	defer file.Close()
@@ -179,13 +192,16 @@ func (app *Application) formUploadHandler(w http.ResponseWriter, r *http.Request
 	// reopening file because hash consumes it
 	file, err = os.Open("/tmp/file.txt")
 	if err != nil {
+		slog.Warn("file not found", "path", "/tmp/file.txt", "error", err)
 		http.Error(w, "Couldn't find file", http.StatusNotFound)
 	}
 	defer file.Close()
 
 	err = SaveFile(app.lastUploadedFile, file)
 	if err != nil {
+		slog.Error("error saving file", "file", app.lastUploadedFile, "error", err)
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
+		return
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("http://%s/%s", app.url, filename), http.StatusSeeOther)
@@ -193,19 +209,21 @@ func (app *Application) formUploadHandler(w http.ResponseWriter, r *http.Request
 
 func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.Error(w, "Method not allowed", http.StatusUnauthorized)
+		slog.Warn("invalid path accessed", "path", r.URL.Path)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	if !CheckAuth(r, app.key) {
-		http.Error(w, "You're not authorized.", http.StatusBadRequest)
+		slog.Warn("unauthorized access attempt")
+		http.Error(w, "You're not authorized.", http.StatusUnauthorized)
 		return
 	}
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
+		slog.Warn("failed to retrieve form file", "error", err)
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		slog.Warn(err.Error())
 		return
 	}
 	defer file.Close()
@@ -224,13 +242,16 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	// reopen the file for copying, as the hash process consumed the file reader
 	file, _, err = r.FormFile("file")
 	if err != nil {
+		slog.Warn("failed to retrieve form file", "error", err)
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
 
 	if err = SaveFile(app.lastUploadedFile, file); err != nil {
+		slog.Error("failed to save file", "file", app.lastUploadedFile, "error", err)
 		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
+		return
 	}
 
 	ResponseURLHandler(r, w, app.url, filename)
@@ -238,11 +259,12 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createJWTHandler(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp": time.Now().Add(time.Hour * 2).Unix(),
+		"exp": time.Now().Add(2 * time.Hour).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(app.key))
 	if err != nil {
+		slog.Error("failed to sign JWT token", "error", err)
 		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return
 	}

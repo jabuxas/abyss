@@ -100,13 +100,13 @@ func setupHandlers(mux *http.ServeMux, app *Application) {
 		"/tree/",
 		http.StripPrefix(
 			"/tree",
-			LogHandler(BasicAuth(app.fileListingHandler, app)),
+			LogHandler(BasicAuth(app.listAllFilesHandler, app)),
 		),
 	)
 
 	mux.HandleFunc("/last", LogHandler(BasicAuth(app.lastUploadedHandler, app)))
 
-	mux.HandleFunc("/token", LogHandler(BasicAuth(app.createTokenHandler, app)))
+	mux.HandleFunc("/token", LogHandler(BasicAuth(app.createJWTHandler, app)))
 
-	mux.HandleFunc("/raw/", LogHandler(app.fileHandler))
+	mux.HandleFunc("/raw/", LogHandler(app.serveRawFileHandler))
 }
