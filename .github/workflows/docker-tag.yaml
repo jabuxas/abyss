@@ -1,28 +1,32 @@
-name: Build and Push Docker Image Tag
+name: build docker img tag
 
 on:
   push:
     tags:
       - "*"
 
+permissions: write-all
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        image: [abyss]
+        dockerfile: [Dockerfile]
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker registry
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login git.jabuxas.com -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-
-      - name: Build and push Docker image
-        run: |
-          docker build -t git.jabuxas.com/jabuxas/abyss:${{ github.ref_name }} .
-          docker push git.jabuxas.com/jabuxas/abyss:${{ github.ref_name }}
-
-      - name: Log out of Docker registry
-        run: docker logout git.jabuxas.com
+      - name: Build and push to Github registry
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ github.ref_name }}
+          file: ${{ matrix.dockerfile }}
