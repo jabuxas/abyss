@@ -124,7 +124,7 @@
     </header>
     <div class="content">
         {{if eq .Type "text"}}
-        <pre class="chroma">{{.Content}}</pre>
+        {{.Content}}
         {{else if eq .Type "image"}}
         <img src="{{.Name}}" alt="Image" />
         {{else if eq .Type "pdf"}}

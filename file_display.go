@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
@@ -69,12 +70,16 @@ func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 			slog.Warn("Chroma tokenizing error: " + err.Error())
 		}
 
-		style := styles.Get("monokai")
+		style := styles.Get(app.colorscheme)
 		if style == nil {
 			style = styles.Fallback
 		}
 
-		formatter := html.New(html.WithLineNumbers(false), html.WithClasses(false))
+		builder := style.Builder()
+		builder.AddEntry(chroma.Background, chroma.MustParseStyleEntry("#2e2e2e"))
+		style, _ = builder.Build()
+
+		formatter := html.New(html.WithLineNumbers(true), html.WithClasses(false))
 
 		if err := formatter.Format(&highlighted, style, iterator); err != nil {
 			slog.Warn("Chroma formatting error: " + err.Error())
