@@ -33,12 +33,11 @@ func main() {
 			username: os.Getenv("AUTH_USERNAME"),
 			password: os.Getenv("AUTH_PASSWORD"),
 		},
-		url:         os.Getenv("ABYSS_URL"),
-		key:         os.Getenv("UPLOAD_KEY"),
-		filesDir:    os.Getenv("ABYSS_FILEDIR"),
-		port:        os.Getenv("ABYSS_PORT"),
-		authUpload:  os.Getenv("SHOULD_AUTH"),
-		colorscheme: os.Getenv("ABYSS_COLORSCHEME"),
+		url:        os.Getenv("ABYSS_URL"),
+		key:        os.Getenv("UPLOAD_KEY"),
+		filesDir:   os.Getenv("ABYSS_FILEDIR"),
+		port:       os.Getenv("ABYSS_PORT"),
+		authUpload: os.Getenv("SHOULD_AUTH"),
 	}
 
 	parseEnv(app)
@@ -73,11 +72,6 @@ func parseEnv(app *Application) {
 
 	if app.key == "" {
 		slog.Warn("no upload key detected")
-	}
-
-	if app.colorscheme == "" {
-		slog.Warn("no colorscheme detected, using default")
-		app.colorscheme = "nordic"
 	}
 
 	if app.filesDir == "" {

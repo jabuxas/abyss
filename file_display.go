@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"embed"
+	"encoding/xml"
+	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -15,6 +17,12 @@ import (
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
 )
+
+//go:embed templates/fileDisplay.html
+var filesTemplate embed.FS
+
+//go:embed templates/colorscheme.xml
+var colorschemeXML embed.FS
 
 var extensions = map[string]string{
 	".mp4": "video", ".mkv": "video", ".webm": "video",
@@ -40,9 +48,6 @@ var extensions = map[string]string{
 	".gitignore": "text", ".dockerfile": "text", ".Makefile": "text",
 	".rst": "text", ".el": "text", ".fish": "text",
 }
-
-//go:embed templates/fileDisplay.html
-var filesTemplate embed.FS
 
 func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 	var tmpl *template.Template
@@ -70,16 +75,12 @@ func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 			slog.Warn("Chroma tokenizing error: " + err.Error())
 		}
 
-		style := styles.Get(app.colorscheme)
+		style := LoadStyle(app)
 		if style == nil {
 			style = styles.Fallback
 		}
 
-		builder := style.Builder()
-		builder.AddEntry(chroma.Background, chroma.MustParseStyleEntry("#2e2e2e"))
-		style, _ = builder.Build()
-
-		formatter := html.New(html.WithLineNumbers(true), html.WithClasses(false))
+		formatter := html.New(html.WithLineNumbers(true), html.TabWidth(4), html.WithClasses(false), html.WithLinkableLineNumbers(true, ""))
 
 		if err := formatter.Format(&highlighted, style, iterator); err != nil {
 			slog.Warn("Chroma formatting error: " + err.Error())
@@ -97,6 +98,64 @@ func DisplayFile(app *Application, file string, w http.ResponseWriter) {
 	if err := tmpl.Execute(w, fileInfo); err != nil {
 		slog.Warn(err.Error())
 	}
+}
+
+func LoadStyle(app *Application) *chroma.Style {
+	var data []byte
+	var err error
+
+	if _, statErr := os.Stat("templates/colorscheme.xml"); statErr == nil {
+		data, err = os.ReadFile("templates/colorscheme.xml")
+	} else {
+		data, err = colorschemeXML.ReadFile("templates/colorscheme.xml")
+	}
+
+	if err != nil {
+		slog.Warn("failed to read style XML: " + err.Error())
+		return styles.Fallback
+	}
+
+	var styleXML struct {
+		Entries []struct {
+			Token string `xml:"type,attr"`
+			Value string `xml:"style,attr"`
+		} `xml:"entry"`
+	}
+
+	if err := xml.Unmarshal(data, &styleXML); err != nil {
+		slog.Warn("invalid XML: " + err.Error())
+		return styles.Fallback
+	}
+
+	builder := chroma.NewStyleBuilder("custom")
+	for _, e := range styleXML.Entries {
+		if e.Token == "" {
+			slog.Warn("Empty token found in style XML, skipping")
+			continue
+		}
+
+		token, err := chroma.TokenTypeString(e.Token)
+		if err != nil {
+			slog.Warn(fmt.Sprintf("Invalid token type '%s': %s", e.Token, err.Error()))
+			continue
+		}
+
+		styleEntry, err := chroma.ParseStyleEntry(e.Value)
+		if err != nil {
+			slog.Warn(fmt.Sprintf("Invalid style value '%s' for token '%s': %s", e.Value, e.Token, err.Error()))
+			continue
+		}
+
+		builder.AddEntry(token, styleEntry)
+	}
+
+	style, err := builder.Build()
+	if err != nil {
+		slog.Warn("Style build failed: " + err.Error())
+		return styles.Fallback
+	}
+
+	return style
 }
 
 func getType(file string) string {

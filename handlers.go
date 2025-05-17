@@ -27,7 +27,6 @@ type Application struct {
 	port             string
 	authUpload       string
 	lastUploadedFile string
-	colorscheme      string
 }
 
 //go:embed static/**

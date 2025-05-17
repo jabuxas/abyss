@@ -5,8 +5,6 @@ read -p "Server domain name - this is the end url of where abyss will be hosted 
 
 read -p "Upload key - this is the key you will need to have to be able to make uploads to the server []: " -e UPLOAD_KEY
 
-read -p "Syntax highlighting colorscheme - this is the chroma colorscheme for your uploaded files []: " -e ABYSS_COLORSCHEME
-
 read -p "Files Directory - this is the dir location for storing the files [./files]: " -e ABYSS_FILEDIR
 
 read -p "Server port - this is the port the server will run on; type just the port number. [3235]: " -e ABYSS_PORT
@@ -44,9 +42,6 @@ AUTH_PASSWORD=$AUTH_PASSWORD
 
 # This is whether you need a password to upload text (through browser or curl)
 SHOULD_AUTH=$SHOULD_AUTH
-
-# This is the chroma (https://xyproto.github.io/splash/docs/all.html) colorscheme for your uploaded files
-ABYSS_COLORSCHEME=$ABYSS_COLORSCHEME
 
 # This is the key needed to make uploads. Include it as X-Auth in curl.
 # Tip: Save it somewhere and use it in curl with \$(cat /path/to/key)
