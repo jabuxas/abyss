@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	"html/template"
 	"io"
 	"log/slog"
 	"net/http"
@@ -22,7 +23,7 @@ type FileInfo struct {
 	Size          int64
 	FormattedSize string
 	Type          string
-	Content       string
+	Content       template.HTML
 	TimeUploaded  string
 }
 
