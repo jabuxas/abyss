@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -163,44 +165,23 @@ func (app *Application) uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) formUploadHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
+	if content == "" {
+		http.Error(w, "No content provided", http.StatusBadRequest)
+		return
+	}
 
 	normalized := strings.ReplaceAll(content, "\r\n", "\n")
+	buf := bytes.NewBufferString(normalized)
 
-	if err := os.WriteFile("/tmp/file.txt", []byte(normalized), 0666); err != nil {
-		slog.Error("failed to write file", "error", err)
-		http.Error(w, "Couldn't parse content body", http.StatusNoContent)
-	}
+	full := len(r.Form["secret"]) > 0
 
-	file, err := os.Open("/tmp/file.txt")
-	if err != nil {
-		slog.Warn("file not found", "path", "/tmp/file.txt", "error", err)
-		http.Error(w, "Couldn't find file", http.StatusNotFound)
-	}
-	defer file.Close()
+	filename, _ := HashFile(bytes.NewReader(buf.Bytes()), ".txt", full)
 
-	full := true
-	if len(r.Form["secret"]) == 0 {
-		full = false
-	}
+	path := app.setLastUploaded(filename)
 
-	filename, _ := HashFile(file, ".txt", full)
-
-	// set as lastUploadedFile
-	filepath := filepath.Join(app.filesDir, filename)
-	app.lastUploadedFile = filepath
-
-	// reopening file because hash consumes it
-	file, err = os.Open("/tmp/file.txt")
-	if err != nil {
-		slog.Warn("file not found", "path", "/tmp/file.txt", "error", err)
-		http.Error(w, "Couldn't find file", http.StatusNotFound)
-	}
-	defer file.Close()
-
-	err = SaveFile(app.lastUploadedFile, file)
-	if err != nil {
-		slog.Error("error saving file", "file", app.lastUploadedFile, "error", err)
-		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
+	if err := SaveFile(path, bytes.NewReader(buf.Bytes())); err != nil {
+		slog.Error("error saving file", "file", path, "error", err)
+		http.Error(w, "Error parsing file", http.StatusInternalServerError)
 		return
 	}
 
@@ -228,33 +209,39 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	full := true
-	if len(r.Form["secret"]) == 0 {
-		full = false
+	// buffer file to hash it
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, file); err != nil {
+		slog.Warn("failed to buffer file", "error", err)
+		http.Error(w, "failed to buffer file", http.StatusInternalServerError)
 	}
 
-	filename, _ := HashFile(file, filepath.Ext(handler.Filename), full)
+	// full := true
+	// if len(r.Form["secret"]) == 0 {
+	// 	full = false
+	// }
 
-	// set as lastUploadedFile
-	filepath := filepath.Join(app.filesDir, filename)
-	app.lastUploadedFile = filepath
-
-	// reopen the file for copying, as the hash process consumed the file reader
-	file, _, err = r.FormFile("file")
+	full := len(r.Form["secret"]) > 0
+	filename, err := HashFile(bytes.NewReader(buf.Bytes()), filepath.Ext(handler.Filename), full)
 	if err != nil {
-		slog.Warn("failed to retrieve form file", "error", err)
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		return
+		slog.Warn("failed to hash buffered file", "error", err)
+		http.Error(w, "failed to hash file", http.StatusInternalServerError)
 	}
-	defer file.Close()
 
-	if err = SaveFile(app.lastUploadedFile, file); err != nil {
-		slog.Error("failed to save file", "file", app.lastUploadedFile, "error", err)
-		fmt.Fprintf(w, "Error parsing file: %s", err.Error())
+	filepath := app.setLastUploaded(filename)
+
+	if err := SaveFile(filepath, bytes.NewReader(buf.Bytes())); err != nil {
+		slog.Error("failed to save file", "file", filepath, "error", err)
+		http.Error(w, "failed to save file", http.StatusInternalServerError)
 		return
 	}
 
 	ResponseURLHandler(r, w, app.url, filename)
+}
+
+func (app *Application) setLastUploaded(filename string) string {
+	app.lastUploadedFile = filepath.Join(app.filesDir, filename)
+	return app.lastUploadedFile
 }
 
 func (app *Application) createJWTHandler(w http.ResponseWriter, r *http.Request) {
