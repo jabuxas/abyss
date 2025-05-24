@@ -1,21 +1,25 @@
-FROM golang:1.23 AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
-
-# this is needed because we embed these files into the binary
-COPY static/ ./static/
-COPY templates/ ./templates
-
 RUN go mod download
+RUN go mod verify
 
-COPY *.go ./
+# Copy the entire source code and assets
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /abyss
+COPY . .
 
-FROM scratch
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /app/abyss ./cmd/abyss
 
-COPY --from=builder /abyss /abyss
+FROM alpine:latest
 
-CMD ["/abyss"]
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /app
+
+COPY --from=builder /app/abyss .
+
+EXPOSE 3235
+
+CMD ["./abyss"]
