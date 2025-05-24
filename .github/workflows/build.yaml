@@ -28,7 +28,7 @@ jobs:
       - name: build for ${{ matrix.goarch }}
         run: |
           export CGO_ENABLED=0
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -a -ldflags '-extldflags "-static"' -o abyss-${{ matrix.goarch }}
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -a -ldflags "-s -w -extldflags '-static' -X main.version=${{ env.APP_VERSION }}" -o abyss-${{ matrix.goarch }} ./cmd/abyss
 
       - name: upload binaries
         uses: actions/upload-artifact@v4
