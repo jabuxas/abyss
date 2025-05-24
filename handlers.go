@@ -18,6 +18,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+//go:embed static/**
+var static embed.FS
+
+//go:embed templates/dirlist.html
+var treeTemplate embed.FS
+
 type Application struct {
 	auth struct {
 		username string
@@ -31,11 +37,23 @@ type Application struct {
 	lastUploadedFile string
 }
 
-//go:embed static/**
-var static embed.FS
+func (app *Application) setupHandlersOnMux(mux *http.ServeMux) {
+	mux.HandleFunc("/", LogHandler(app.indexHandler))
 
-//go:embed templates/dirlist.html
-var treeTemplate embed.FS
+	mux.Handle(
+		"/tree/",
+		http.StripPrefix(
+			"/tree",
+			LogHandler(BasicAuth(app.listAllFilesHandler, app)),
+		),
+	)
+
+	mux.HandleFunc("/last", LogHandler(BasicAuth(app.lastUploadedHandler, app)))
+
+	mux.HandleFunc("/token", LogHandler(BasicAuth(app.createJWTHandler, app)))
+
+	mux.HandleFunc("/raw/", LogHandler(app.serveRawFileHandler))
+}
 
 func (app *Application) listAllFilesHandler(w http.ResponseWriter, r *http.Request) {
 	dir := app.filesDir + r.URL.Path
@@ -198,6 +216,13 @@ func (app *Application) curlHandler(w http.ResponseWriter, r *http.Request) {
 	if !CheckAuth(r, app.key) {
 		slog.Warn("unauthorized access attempt")
 		http.Error(w, "You're not authorized.", http.StatusUnauthorized)
+		return
+	}
+
+	err := r.ParseMultipartForm(1024 << 20)
+	if err != nil {
+		slog.Error("failed to parse multipart form", "error", err)
+		http.Error(w, "Error parsing form", http.StatusInternalServerError)
 		return
 	}
 

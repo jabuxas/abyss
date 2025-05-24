@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"log/slog"
 	"net/http"
 	"net/http/httputil"
@@ -196,5 +197,37 @@ func LogHandler(fn http.HandlerFunc) http.HandlerFunc {
 			"status", sr.status,
 			"duration", duration.String(),
 		)
+	}
+}
+
+func (app *Application) initApplication() {
+	if app.auth.username == "" {
+		log.Fatal("basic auth username must be provided")
+	}
+
+	if app.auth.password == "" {
+		log.Fatal("basic auth password must be provided")
+	}
+
+	if app.key == "" {
+		slog.Error("no upload key detected")
+	}
+
+	if app.filesDir == "" {
+		slog.Warn("file dir is not set, running on default ./files")
+		app.filesDir = "./files"
+	}
+
+	if app.port == "" {
+		slog.Info("running on default port")
+		app.port = ":3235"
+	} else {
+		slog.Info("running on modified port")
+		app.port = ":" + app.port
+	}
+
+	if app.url == "" {
+		slog.Warn("no root url detected, defaulting to localhost.")
+		app.url = "localhost" + app.port
 	}
 }
