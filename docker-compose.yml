@@ -1,7 +1,7 @@
 services:
   paste:
-    # image: ghcr.io/jabuxas/abyss:latest
-    build: .
+    image: ghcr.io/jabuxas/abyss:latest
+    # build: .
     ports:
       - "3235:3235"
     volumes:
