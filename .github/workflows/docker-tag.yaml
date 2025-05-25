@@ -1,21 +1,39 @@
-name: build docker img tag
+name: Build and Push Docker Image on Tag
 
 on:
   push:
     tags:
-      - "*"
+      - "v*"
 
-permissions: write-all
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  deploy:
+  build-and-push-docker-tag:
+    name: Build and Push Docker Image for Tag ${{ github.ref_name }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        image: [abyss]
-        dockerfile: [Dockerfile]
+
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Build Information for Docker
+        id: build_info_docker
+        run: |
+          GIT_VERSION=${{ github.ref_name }} 
+          GIT_COMMIT=$(git rev-parse HEAD)
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          BUILT_BY="github-actions-tag-build"
+
+          echo "DOCKER_APP_VERSION=${GIT_VERSION}" >> $GITHUB_ENV
+          echo "DOCKER_GIT_COMMIT=${GIT_COMMIT}" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
+          echo "DOCKER_BUILT_BY=${BUILT_BY}" >> $GITHUB_ENV
+
+          echo "Docker Build Info: Version=${GIT_VERSION}, Commit=${GIT_COMMIT}, Date=${BUILD_DATE}"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -24,9 +42,21 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push to Github registry
-        uses: docker/build-push-action@v4
+      - name: Set up Docker Buildx (for potentially building multi-arch later, good practice)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
+          context: .
+          file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ github.ref_name }}
-          file: ${{ matrix.dockerfile }}
+          tags: ghcr.io/${{ github.repository_owner }}/abyss:${{ github.ref_name }}
+          build-args: |
+            APP_VERSION=${{ env.DOCKER_APP_VERSION }}
+            GIT_COMMIT=${{ env.DOCKER_GIT_COMMIT }}
+            BUILD_DATE=${{ env.DOCKER_BUILD_DATE }}
+            BUILT_BY=${{ env.DOCKER_BUILT_BY }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

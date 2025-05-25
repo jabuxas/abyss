@@ -1,15 +1,18 @@
-name: build abyss
+name: build abyss binaries
 
 on:
   push:
     branches:
       - main
+    tags:
+      - "v*" # Also build on version tags
   pull_request:
     branches:
       - main
 
 jobs:
-  build:
+  build-binaries:
+    name: Build for ${{ matrix.goos }}/${{ matrix.goarch }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,21 +20,53 @@ jobs:
         goarch: [amd64, arm64, riscv64, ppc64le]
 
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for git describe
 
-      - name: set up go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: "1.22.x"
 
-      - name: build for ${{ matrix.goarch }}
+      - name: Generate Build Information
+        id: build_info
         run: |
-          export CGO_ENABLED=0
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -a -ldflags "-s -w -extldflags '-static' -X main.version=${{ env.APP_VERSION }}" -o abyss-${{ matrix.goarch }} ./cmd/abyss
+          GIT_VERSION=$(git describe --tags --always --dirty=-dev 2>/dev/null || git rev-parse --short HEAD)
+          GIT_COMMIT=$(git rev-parse HEAD)
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          BUILT_BY="github-actions"
 
-      - name: upload binaries
+          echo "APP_VERSION=${GIT_VERSION}" >> $GITHUB_ENV
+          echo "GIT_COMMIT=${GIT_COMMIT}" >> $GITHUB_ENV
+          echo "BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
+          echo "BUILT_BY=${BUILT_BY}" >> $GITHUB_ENV
+
+          echo "Build Info: Version=${GIT_VERSION}, Commit=${GIT_COMMIT}, Date=${BUILD_DATE}, BuiltBy=${BUILT_BY}"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+          # APP_VERSION, GIT_COMMIT, BUILD_DATE, BUILT_BY are available from $GITHUB_ENV
+        run: |
+          echo "Building abyss-${{ env.GOOS }}-${{ env.GOARCH }} (Version: ${{ env.APP_VERSION }})"
+          LDFLAGS="-s -w -extldflags '-static'"
+          LDFLAGS="$LDFLAGS -X main.version=${{ env.APP_VERSION }}"
+          LDFLAGS="$LDFLAGS -X main.commit=${{ env.GIT_COMMIT }}"
+          LDFLAGS="$LDFLAGS -X main.date=${{ env.BUILD_DATE }}"
+          LDFLAGS="$LDFLAGS -X main.builtBy=${{ env.BUILT_BY }}"
+
+          go build -v -a \
+            -ldflags="$LDFLAGS" \
+            -o abyss-${{ matrix.goos }}-${{ matrix.goarch }} \
+            ./cmd/abyss
+
+      - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: abyss-${{ matrix.goarch }}
-          path: abyss-${{ matrix.goarch }}
+          name: abyss-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: abyss-${{ matrix.goos }}-${{ matrix.goarch }}
+          if-no-files-found: error

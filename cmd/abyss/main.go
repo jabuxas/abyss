@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -10,7 +12,25 @@ import (
 	"github.com/jabuxas/abyss/internal/handler"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+	builtBy = "unknown"
+)
+
 func main() {
+	versionFlag := flag.Bool("version", false, "print version information and exit")
+	flag.Parse()
+	if *versionFlag {
+		fmt.Printf("abyss\n")
+		fmt.Printf(" version:   %s\n", version)
+		fmt.Printf(" git commit: %s\n", commit)
+		fmt.Printf(" built on:   %s\n", date)
+		fmt.Printf(" built by:   %s\n", builtBy)
+		os.Exit(0)
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		slog.Error("Failed to load configuration during startup", "error", err)

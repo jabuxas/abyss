@@ -2,6 +2,11 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
+ARG APP_VERSION="dev-docker"
+ARG GIT_COMMIT="none-docker"
+ARG BUILD_DATE="unknown-docker"
+ARG BUILT_BY="docker"
+
 COPY go.mod go.sum ./
 RUN go mod download
 RUN go mod verify
@@ -10,7 +15,19 @@ RUN go mod verify
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /app/abyss ./cmd/abyss
+RUN echo "building docker image with version: ${APP_VERSION}, Commit: ${GIT_COMMIT}, Date: ${BUILD_DATE}, BuiltBy: ${BUILT_BY}" && \
+    export CGO_ENABLED=0 && \
+    export GOOS=linux && \
+    export GOARCH=amd64 && \
+    LDFLAGS="-s -w -extldflags '-static'" && \
+    LDFLAGS="$LDFLAGS -X main.version=${APP_VERSION}" && \
+    LDFLAGS="$LDFLAGS -X main.commit=${GIT_COMMIT}" && \
+    LDFLAGS="$LDFLAGS -X main.date=${BUILD_DATE}" && \
+    LDFLAGS="$LDFLAGS -X main.builtBy=${BUILT_BY}" && \
+    go build -v -a \
+      -ldflags="$LDFLAGS" \
+      -o /app/abyss_server \
+      ./cmd/abyss
 
 FROM alpine:latest
 
