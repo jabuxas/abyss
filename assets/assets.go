@@ -1,4 +1,3 @@
-// assets/assets.go
 package assets
 
 import "embed"

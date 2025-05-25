@@ -26,7 +26,7 @@ RUN echo "building docker image with version: ${APP_VERSION}, Commit: ${GIT_COMM
     LDFLAGS="$LDFLAGS -X main.builtBy=${BUILT_BY}" && \
     go build -v -a \
       -ldflags="$LDFLAGS" \
-      -o /app/abyss_server \
+      -o /app/abyss \
       ./cmd/abyss
 
 FROM alpine:latest
