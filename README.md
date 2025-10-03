@@ -194,5 +194,7 @@ abyss is a basic and _mostly_ single user pastebin server written in go made for
 - [x] home page
 - [x] custom file displaying!!
 - [x] syntax highlighting
-- [ ] create example services (openrc/systemd)
-- [ ] distribute it in some distros
+- [ ] paste file expiration time
+- [ ] password protection for viewing a pasted file
+- [ ] button to delete a paste in /tree
+- [ ] custom url for an upload
