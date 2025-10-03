@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"io/fs"
@@ -9,12 +10,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/alecthomas/chroma/v2"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/jabuxas/abyss/assets"
+	"github.com/jabuxas/abyss/internal/app"
+	"github.com/jabuxas/abyss/internal/util"
 )
 
 func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -171,6 +175,27 @@ func (h *Handler) displayFile(w http.ResponseWriter, r *http.Request, filename s
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 		return
+	}
+
+	jsonPath := util.JsonPathFromFilePath(actualFilePath)
+	_, err = os.Stat(jsonPath)
+	if err != nil {
+		h.App.Logger.Info("File does not have metadata", "path", actualFilePath)
+	} else {
+		file, err := os.ReadFile(jsonPath)
+		if err != nil {
+			h.App.Logger.Error("Failed to open metadata file", "path", jsonPath, "error", err)
+		}
+
+		var meta app.PasteMetadata
+		if err := json.Unmarshal(file, &meta); err != nil {
+			h.App.Logger.Error("Failed to unmarshal metadata", "error", err)
+		}
+
+		if meta.ExpiresAt != nil && time.Now().After(*meta.ExpiresAt) {
+			os.Remove(actualFilePath)
+			os.Remove(jsonPath)
+		}
 	}
 
 	fileType := h.getFileType(filename)

@@ -68,14 +68,11 @@ func SaveMetadata(path string, expiry *time.Time) error {
 		panic(err)
 	}
 
-	dir, file := filepath.Split(path)
-	newDir := filepath.Join(dir, "json")
-	newFile := file + ".json"
-	jsonPath := filepath.Join(newDir, newFile)
+	jsonPath := JsonPathFromFilePath(path)
 
-	err = os.MkdirAll(newDir, 0755)
+	err = os.MkdirAll(filepath.Dir(jsonPath), 0755)
 	if err != nil {
-		slog.Error("failed to create metadata directory", "error", err, "dir", newDir)
+		slog.Error("failed to create metadata directory", "error", err, "dir", filepath.Dir(jsonPath))
 		return err
 	}
 
@@ -98,4 +95,11 @@ func ParseExpiration(d string) (*time.Time, error) {
 	}
 	t := time.Now().Add(duration)
 	return &t, nil
+}
+
+func JsonPathFromFilePath(filePath string) string {
+	dir, file := filepath.Split(filePath)
+	jsonDir := filepath.Join(dir, "json")
+	jsonFile := file + ".json"
+	return filepath.Join(jsonDir, jsonFile)
 }
