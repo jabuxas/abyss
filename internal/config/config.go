@@ -16,7 +16,6 @@ type Config struct {
 	UploadKey    string
 	FilesDir     string
 	Port         string
-	ShouldAuth   bool
 	Debug        bool
 	JWTSecretKey []byte // For JWT, same as UploadKey but for simplicity here
 
@@ -34,7 +33,6 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		FilesDir:           "./files",
 		Port:               "3235",
-		ShouldAuth:         true,
 		Debug:              false,
 		ServerIdleTimeout:  10 * time.Second,
 		ServerReadTimeout:  10 * time.Second,
@@ -78,10 +76,6 @@ func Load() (*Config, error) {
 		if cfg.AbyssURL == "localhost:3235" && cfg.Port != "3235" {
 			cfg.AbyssURL = "localhost:" + cfg.Port
 		}
-	}
-
-	if val := os.Getenv("SHOULD_AUTH"); val != "" {
-		cfg.ShouldAuth = (val == "yes" || val == "true")
 	}
 
 	if val := os.Getenv("DEBUG"); val == "1" || val == "true" {

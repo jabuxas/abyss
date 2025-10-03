@@ -16,11 +16,7 @@ import (
 func (h *Handler) uploadDelegator(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
-		if h.App.Config.ShouldAuth {
-			middleware.BasicAuth(h.App, h.formUploadHandler)(w, r)
-		} else {
-			h.formUploadHandler(w, r)
-		}
+		middleware.BasicAuth(h.App, h.formUploadHandler)(w, r)
 	} else if strings.HasPrefix(contentType, "multipart/form-data") {
 		h.curlUploadHandler(w, r)
 	} else {

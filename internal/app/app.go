@@ -65,7 +65,7 @@ func NewApplication(cfg *config.Config) (*Application, error) {
 	}
 
 	logger.Info("Application initialized with effective settings",
-		"url", cfg.AbyssURL, "filesDir", cfg.FilesDir, "port", cfg.Port, "formUploadAuth", cfg.ShouldAuth,
+		"url", cfg.AbyssURL, "filesDir", cfg.FilesDir, "port", cfg.Port,
 	)
 	return app, nil
 }

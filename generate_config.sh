@@ -9,14 +9,14 @@ read -p "Files Directory - this is the dir location for storing the files [./fil
 
 read -p "Server port - this is the port the server will run on; type just the port number. [3235]: " -e ABYSS_PORT
 
-read -p "Auth username - this is the username to access /tree (show all uploaded files) [admin]: " -e AUTH_USERNAME
+read -p "Auth username - this is the username to access Basic-Auth protected endpoints [admin]: " -e AUTH_USERNAME
 if [ -z $AUTH_USERNAME ]; then
     AUTH_USERNAME="admin"
 fi
 
-read -p "Auth password - this is the password to access /tree (show all uploaded files) [admin]: " -e AUTH_PASSWORD
+read -p "Auth password - this is the password to access Basic-Auth protected endpoints [changeme]: " -e AUTH_PASSWORD
 if [ -z $AUTH_PASSWORD ]; then
-    AUTH_PASSWORD="admin"
+    AUTH_PASSWORD="changeme"
 fi
 
 read -p "Auth for upload form - should password be needed to upload text through the browser? [yes]: " -e SHOULD_AUTH
