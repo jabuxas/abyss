@@ -1,35 +1,47 @@
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Abyss - A minimalist pastebin webserver" />
+    <meta
+      name="description"
+      content="Abyss - A minimalist pastebin webserver"
+    />
     <title>abyss paste</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
-</head>
+  </head>
 
-<body>
+  <body>
     <h1>abyss paste</h1>
     <div>
-        <a href="/tree">
-            <button>all uploaded files</button>
-        </a>
-        <a href="/last">
-            <button>last uploaded file</button>
-        </a>
+      <a href="/tree">
+        <button>all uploaded files</button>
+      </a>
+      <a href="/last">
+        <button>last uploaded file</button>
+      </a>
     </div>
 
     <form action="/" method="POST">
-        <textarea name="content" placeholder="Enter your content here..."></textarea>
-        <br />
-        <button type="submit">upload</button>
+      <div class="expiration-container">
+        <label for="expiration">Expiration:</label>
+        <select name="expiration" id="expiration">
+          <option value="">Never</option>
+          <option value="10m">10 Minutes</option>
+          <option value="1h">1 Hour</option>
+          <option value="1d">1 Day</option>
+        </select>
+      </div>
+      <textarea
+        name="content"
+        placeholder="Enter your content here..."
+      ></textarea>
+      <button type="submit">upload</button>
     </form>
 
     <footer>
-        abyss paste - powered by
-        <a href="https://github.com/jabuxas/abyss" target="_blank">abyss</a>
+      abyss paste - powered by
+      <a href="https://github.com/jabuxas/abyss" target="_blank">abyss</a>
     </footer>
-</body>
-
+  </body>
 </html>

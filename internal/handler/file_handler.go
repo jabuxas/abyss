@@ -44,6 +44,19 @@ func (h *Handler) formUploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	useFullHash := len(r.Form["secret"]) > 0
 
+	var expiry *time.Time
+	var err error
+
+	if len(r.Form["expiration"]) > 0 {
+		expiry, err = util.ParseExpiration(r.FormValue("expiration"))
+		if err != nil {
+			h.App.Logger.Error("Failed to parse expiry date", "error", err)
+			http.Error(w, "Error parsing expiry", http.StatusInternalServerError)
+			return
+		}
+
+	}
+
 	filename, err := util.HashFile(bytes.NewReader(contentBytes), ".txt", useFullHash)
 	if err != nil {
 		h.App.Logger.Error("Error hashing form content", "error", err)
@@ -55,6 +68,13 @@ func (h *Handler) formUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if err := util.SaveFile(filePath, bytes.NewReader(contentBytes)); err != nil {
 		h.App.Logger.Error("Error saving form uploaded file", "file", filePath, "error", err)
 		http.Error(w, "Error saving file", http.StatusInternalServerError)
+		return
+	}
+
+	err = util.SaveMetadata(filePath, expiry)
+	if err != nil {
+		h.App.Logger.Error("Failed to save metadata of uploaded file", "file", filePath, "error", err)
+		http.Error(w, "Error saving metadata", http.StatusInternalServerError)
 		return
 	}
 
