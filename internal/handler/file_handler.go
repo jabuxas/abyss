@@ -216,6 +216,10 @@ func (h *Handler) ListAllFilesHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		if entry.IsDir() {
+			continue
+		}
+
 		linkPath := filepath.Join(r.URL.Path, entry.Name())
 
 		fileInfos = append(fileInfos, FileInfo{
