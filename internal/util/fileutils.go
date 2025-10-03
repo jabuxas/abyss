@@ -3,10 +3,16 @@ package util
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/jabuxas/abyss/internal/app"
 )
 
 // FormatFileSize converts bytes to a human-readable string.
@@ -49,4 +55,47 @@ func SaveFile(path string, file io.Reader) error {
 		return fmt.Errorf("failed to copy content to destination file %s: %w", path, err)
 	}
 	return nil
+}
+
+func SaveMetadata(path string, expiry *time.Time) error {
+	// path is something like files/1DBF8.el
+	metadata := app.PasteMetadata{
+		ExpiresAt: expiry,
+	}
+
+	data, err := json.MarshalIndent(metadata, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	dir, file := filepath.Split(path)
+	newDir := filepath.Join(dir, "json")
+	newFile := file + ".json"
+	jsonPath := filepath.Join(newDir, newFile)
+
+	err = os.MkdirAll(newDir, 0755)
+	if err != nil {
+		slog.Error("failed to create metadata directory", "error", err, "dir", newDir)
+		return err
+	}
+
+	err = os.WriteFile(jsonPath, data, 0644)
+	if err != nil {
+		slog.Error("failed to write metadata file", "error", err, "path", jsonPath)
+		return err
+	}
+
+	return nil
+}
+
+func ParseExpiration(d string) (*time.Time, error) {
+	if d == "" {
+		return nil, nil
+	}
+	duration, err := time.ParseDuration(d)
+	if err != nil {
+		return nil, err
+	}
+	t := time.Now().Add(duration)
+	return &t, nil
 }

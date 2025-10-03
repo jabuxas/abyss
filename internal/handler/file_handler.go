@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/jabuxas/abyss/internal/middleware"
 	"github.com/jabuxas/abyss/internal/util"
@@ -88,6 +89,7 @@ func (h *Handler) curlUploadHandler(w http.ResponseWriter, r *http.Request) {
 	fileBytes := buf.Bytes()
 
 	useFullHash := len(r.Form["secret"]) > 0
+
 	filename, err := util.HashFile(bytes.NewReader(fileBytes), filepath.Ext(handler.Filename), useFullHash)
 	if err != nil {
 		h.App.Logger.Error("Failed to hash buffered file (curl)", "error", err)
@@ -95,10 +97,29 @@ func (h *Handler) curlUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var expiry *time.Time
+
+	if len(r.Form["expiration"]) > 0 {
+		expiry, err = util.ParseExpiration(r.FormValue("expiration"))
+		if err != nil {
+			h.App.Logger.Error("Failed to parse expiry date", "error", err)
+			http.Error(w, "Error parsing expiry", http.StatusInternalServerError)
+			return
+		}
+
+	}
+
 	filePath := filepath.Join(h.App.Config.FilesDir, filename)
 	if err := util.SaveFile(filePath, bytes.NewReader(fileBytes)); err != nil {
 		h.App.Logger.Error("Failed to save curl uploaded file", "file", filePath, "error", err)
 		http.Error(w, "Error saving file", http.StatusInternalServerError)
+		return
+	}
+
+	err = util.SaveMetadata(filePath, expiry)
+	if err != nil {
+		h.App.Logger.Error("Failed to save metadata of uploaded file", "file", filePath, "error", err)
+		http.Error(w, "Error saving metadata", http.StatusInternalServerError)
 		return
 	}
 
