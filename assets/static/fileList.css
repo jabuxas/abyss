@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.file-listing {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.file-listing th,
+.file-listing td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.file-listing th {
+    background-color: #333;
+    color: white;
+}
+
+.file-listing tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.file-listing tr:hover {
+    background-color: #f1f1f1;
+}
+
+.file-listing td a {
+    color: #0288d1;
+    text-decoration: none;
+}
+
+.file-listing td a:hover {
+    text-decoration: underline;
+}

@@ -21,6 +21,7 @@ func GetRouter() gin.Engine {
 		"foo": "bar",
 	}))
 	authorized.GET("/token", GenerateJWTToken)
+	authorized.GET("/list", ListFilesHandler)
 
 	return *r
 }

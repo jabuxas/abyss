@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jabuxas/abyss/internal/utils"
@@ -31,16 +32,16 @@ func ServeFileHandler(c *gin.Context) {
 	}
 
 	fileData := FileData{
-		name:          filename,
-		path:          "/raw/" + filename,
-		extension:     fileType,
-		uploaded_date: fileInfo.ModTime().Format("2001-01-01 00:00:00"),
+		Name:         filename,
+		Path:         "/raw/" + filename,
+		Extension:    fileType,
+		UploadedDate: fileInfo.ModTime().Format("2001-01-01 00:00:00"),
 	}
 
 	if fileType == "text" {
 		content, err := os.ReadFile(filePath)
 		if err == nil {
-			fileData.content = string(content)
+			fileData.Content = string(content)
 		}
 	}
 
@@ -63,4 +64,46 @@ func UploadFileHandler(c *gin.Context) {
 	file, _ := c.FormFile("file")
 	c.SaveUploadedFile(file, "./files/new/"+file.Filename)
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+}
+
+func ListFilesHandler(c *gin.Context) {
+	dirPath := "./files/new"
+
+	dirEntries, err := os.ReadDir(dirPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			c.String(http.StatusNotFound, "directory not found")
+			return
+		}
+		c.String(http.StatusInternalServerError, "failed to read directory")
+		return
+	}
+
+	var fileInfos []FileData
+	for _, entry := range dirEntries {
+		if entry.IsDir() {
+			continue
+		}
+
+		info, err := entry.Info()
+		if err != nil {
+			log.Println("failed to get file info for", entry.Name(), ":", err)
+			continue
+		}
+
+		linkPath := filepath.Join("/" + entry.Name())
+
+		fileInfos = append(fileInfos, FileData{
+			Name:          entry.Name(),
+			Path:          linkPath,
+			UploadedDate:  info.ModTime().UTC().Format("2006-01-02 15:04:05 UTC"),
+			FormattedSize: utils.FormatFileSize(info.Size()),
+			Extension:     filepath.Ext(entry.Name()),
+		})
+	}
+
+	c.HTML(http.StatusOK, "fileList.html", gin.H{
+		"Files": fileInfos,
+		"URL":   "localhost",
+	})
 }

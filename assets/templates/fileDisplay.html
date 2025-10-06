@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>abyss paste - {{if .data}}{{.data.name}}{{end}}</title>
+    <title>abyss paste - {{if .data}}{{.data.Name}}{{end}}</title>
     <link rel="stylesheet" type="text/css" href="/static/fileDisplay.css" />
   </head>
 
@@ -13,34 +13,34 @@
         <a href="/">Home</a>
       </nav>
       <div class="path">
-        {{if .data}}{{.data.path}}{{else}}Loading...{{end}}
+        {{if .data}}{{.data.Path}}{{else}}Loading...{{end}}
       </div>
       <div></div>
     </header>
     <div class="content">
-      {{if .data}} {{if eq .data.extension "text"}}
+      {{if .data}} {{if eq .data.Extension "text"}}
       <pre>{{.data.Content}}</pre>
-      {{else if eq .data.extension "image"}}
-      <img src="{{.data.path}}" alt="Image: {{.data.name}}" />
-      {{else if eq .data.extension "pdf"}}
-      <embed src="{{.data.path}}" type="application/pdf" class="pdf-embed" />
-      {{else if eq .data.extension "video"}}
+      {{else if eq .data.Extension "image"}}
+      <img src="{{.data.Path}}" alt="Image: {{.data.Name}}" />
+      {{else if eq .data.Extension "pdf"}}
+      <embed src="{{.data.Path}}" type="application/pdf" class="pdf-embed" />
+      {{else if eq .data.Extension "video"}}
       <video controls>
-        <source src="{{.data.path}}" />
+        <source src="{{.data.Path}}" />
         Your browser does not support the video tag.
       </video>
-      {{else if eq .data.extension "audio"}}
-      <audio controls src="{{.data.path}}"></audio>
+      {{else if eq .data.Extension "audio"}}
+      <audio controls src="{{.data.Path}}"></audio>
       {{else}}
       <p>
-        File type '{{.data.extension}}' cannot be displayed directly. Visit
-        <a href="{{.data.path}}">this link</a> to see/download your file
+        File type '{{.data.Extension}}' cannot be displayed directly. Visit
+        <a href="{{.data.Path}}">this link</a> to see/download your file
         '{{.data.Name}}'.
       </p>
       {{end}} {{else}}
       <p>Error: File data not available.</p>
       {{end}}
     </div>
-    <footer>{{if .data}}file uploaded on {{.data.TimeUploaded}}{{end}}</footer>
+    <footer>{{if .data}}file uploaded on {{.data.UploadedDate}}{{end}}</footer>
   </body>
 </html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dir listing</title>
+    <link rel="stylesheet" type="text/css" href="/static/fileList.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>{{ .URL }}</h1>
+    </header>
+
+    <table class="file-listing">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Time Uploaded</th>
+          <th>Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Files}}
+        <tr>
+          <td>
+            <a href="{{.Path}}">{{.Name}}</a>
+          </td>
+          <td>{{.TimeUploaded}}</td>
+          <td>{{.FormattedSize}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </body>
+</html>
