@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jabuxas/abyss/internal/app"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // FormatFileSize converts bytes to a human-readable string.
@@ -57,10 +58,11 @@ func SaveFile(path string, file io.Reader) error {
 	return nil
 }
 
-func SaveMetadata(path string, expiry *time.Time) error {
+func SaveMetadata(path string, expiry *time.Time, passwordHash []byte) error {
 	// path is something like files/1DBF8.el
 	metadata := app.PasteMetadata{
-		ExpiresAt: expiry,
+		ExpiresAt:    expiry,
+		PasswordHash: passwordHash,
 	}
 
 	data, err := json.MarshalIndent(metadata, "", "  ")
@@ -95,6 +97,17 @@ func ParseExpiration(d string) (*time.Time, error) {
 	}
 	t := time.Now().Add(duration)
 	return &t, nil
+}
+
+func ParsePassword(d string) ([]byte, error) {
+	if d == "" {
+		return nil, nil
+	}
+	bcryptHash, err := bcrypt.GenerateFromPassword([]byte(d), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	return bcryptHash, nil
 }
 
 func JsonPathFromFilePath(filePath string) string {

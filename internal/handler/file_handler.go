@@ -54,7 +54,17 @@ func (h *Handler) formUploadHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error parsing expiry", http.StatusInternalServerError)
 			return
 		}
+	}
 
+	var passwordHash []byte
+
+	if len(r.Form["password"]) > 0 {
+		passwordHash, err = util.ParsePassword(r.FormValue("password"))
+		if err != nil {
+			h.App.Logger.Error("Failed to parse file password", "error", err)
+			http.Error(w, "Error parsing password", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	filename, err := util.HashFile(bytes.NewReader(contentBytes), ".txt", useFullHash)
@@ -71,7 +81,7 @@ func (h *Handler) formUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = util.SaveMetadata(filePath, expiry)
+	err = util.SaveMetadata(filePath, expiry, passwordHash)
 	if err != nil {
 		h.App.Logger.Error("Failed to save metadata of uploaded file", "file", filePath, "error", err)
 		http.Error(w, "Error saving metadata", http.StatusInternalServerError)
@@ -118,6 +128,7 @@ func (h *Handler) curlUploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var expiry *time.Time
+	var passwordHash []byte
 
 	if len(r.Form["expiration"]) > 0 {
 		expiry, err = util.ParseExpiration(r.FormValue("expiration"))
@@ -126,7 +137,15 @@ func (h *Handler) curlUploadHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error parsing expiry", http.StatusInternalServerError)
 			return
 		}
+	}
 
+	if len(r.Form["password"]) > 0 {
+		passwordHash, err = util.ParsePassword(r.FormValue("password"))
+		if err != nil {
+			h.App.Logger.Error("Failed to parse file password", "error", err)
+			http.Error(w, "Error parsing password", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	filePath := filepath.Join(h.App.Config.FilesDir, filename)
@@ -136,7 +155,7 @@ func (h *Handler) curlUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = util.SaveMetadata(filePath, expiry)
+	err = util.SaveMetadata(filePath, expiry, passwordHash)
 	if err != nil {
 		h.App.Logger.Error("Failed to save metadata of uploaded file", "file", filePath, "error", err)
 		http.Error(w, "Error saving metadata", http.StatusInternalServerError)
