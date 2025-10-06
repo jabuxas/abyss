@@ -24,16 +24,23 @@ func GenerateJWTToken(c *gin.Context) {
 }
 
 func IsAuthorized(c *gin.Context) bool {
-	authHeader := c.GetHeader("X-Auth")
-	if authHeader == "" {
+	auth := c.GetHeader("X-Auth")
+	if auth == "" {
+		auth = c.PostForm("auth")
+	}
+	if auth == "" {
+		auth = c.Query("auth")
+	}
+
+	if auth == "" {
 		return false
 	}
 
-	if subtle.ConstantTimeCompare([]byte(authHeader), []byte(KEY)) == 1 {
+	if subtle.ConstantTimeCompare([]byte(auth), []byte(KEY)) == 1 {
 		return true
 	}
 
-	token, err := jwt.Parse(authHeader, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(auth, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}

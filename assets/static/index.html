@@ -22,7 +22,7 @@
       </a>
     </div>
 
-    <form action="/" method="POST">
+    <form action="/upload" method="POST" enctype="multipart/form-data">
       <div class="expiration-container">
         <label for="expiration">Expiration:</label>
         <select name="expiration" id="expiration">
@@ -32,6 +32,7 @@
           <option value="1d">1 Day</option>
         </select>
       </div>
+
       <div class="password-container">
         <label for="password">Password:</label>
         <input
@@ -41,10 +42,27 @@
           placeholder="Enter password (optional)"
         />
       </div>
+
       <textarea
         name="content"
         placeholder="Enter your content here..."
       ></textarea>
+
+      <div class="file-container">
+        <label for="file">File:</label>
+        <input type="file" name="file" id="file" />
+      </div>
+
+      <div class="auth-container">
+        <label for="auth">Auth key:</label>
+        <input
+          type="password"
+          name="auth"
+          id="auth"
+          placeholder="Enter API key or token"
+        />
+      </div>
+
       <button type="submit">upload</button>
     </form>
 
