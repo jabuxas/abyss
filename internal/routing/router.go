@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var KEY = "1"
+
 func GetRouter() gin.Engine {
 	r := gin.Default()
 
@@ -14,6 +16,11 @@ func GetRouter() gin.Engine {
 	r.GET("/:file", ServeFileHandler)
 	r.GET("/raw/:file", ServeRawFileHandler)
 	r.POST("/upload", UploadFileHandler)
+
+	authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
+		"foo": "bar",
+	}))
+	authorized.GET("/token", GenerateJWTToken)
 
 	return *r
 }

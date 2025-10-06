@@ -56,6 +56,10 @@ func ServeRawFileHandler(c *gin.Context) {
 }
 
 func UploadFileHandler(c *gin.Context) {
+	if !IsAuthorized(c) {
+		c.String(http.StatusUnauthorized, "unauthorized")
+		return
+	}
 	file, _ := c.FormFile("file")
 	c.SaveUploadedFile(file, "./files/new/"+file.Filename)
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
