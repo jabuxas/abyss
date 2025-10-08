@@ -18,7 +18,7 @@ func indexHandler(c *gin.Context) {
 
 func serveFileHandler(c *gin.Context) {
 	filename := c.Param("file")
-	filePath := cfg.FilesDir + filename
+	filePath := filepath.Join(cfg.FilesDir, filename)
 
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
@@ -63,13 +63,12 @@ func uploadFileHandler(c *gin.Context) {
 		return
 	}
 	file, _ := c.FormFile("file")
-	newName := filepath.Join(cfg.FilesDir, utils.HashedName())
+	newName := filepath.Join(cfg.FilesDir, utils.HashedName(file.Filename))
 	c.SaveUploadedFile(file, newName)
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", newName))
 }
 
 func listFilesHandler(c *gin.Context) {
-	log.Println("Listing files in directory:", cfg.FilesDir)
 	dirEntries, err := os.ReadDir(cfg.FilesDir)
 	if err != nil {
 		if os.IsNotExist(err) {
