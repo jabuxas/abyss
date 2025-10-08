@@ -36,7 +36,7 @@ func isAuthorized(c *gin.Context) bool {
 		return false
 	}
 
-	if subtle.ConstantTimeCompare([]byte(auth), []byte(KEY)) == 1 {
+	if subtle.ConstantTimeCompare([]byte(auth), []byte(cfg.UploadKey)) == 1 {
 		return true
 	}
 

@@ -54,7 +54,7 @@ func serveFileHandler(c *gin.Context) {
 func serveRawFileHandler(c *gin.Context) {
 	file := c.Param("file")
 	log.Println("Serving file:", file)
-	c.File(cfg.FilesDir + file)
+	c.File(filepath.Join(cfg.FilesDir, file))
 }
 
 func uploadFileHandler(c *gin.Context) {
@@ -63,8 +63,9 @@ func uploadFileHandler(c *gin.Context) {
 		return
 	}
 	file, _ := c.FormFile("file")
-	c.SaveUploadedFile(file, cfg.FilesDir+utils.HashedName())
-	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+	newName := filepath.Join(cfg.FilesDir, utils.HashedName())
+	c.SaveUploadedFile(file, newName)
+	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", newName))
 }
 
 func listFilesHandler(c *gin.Context) {

@@ -1,50 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    font-family: "Courier New", monospace;
+    background-color: #0a0a0a;
+    color: #c0c0c0;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #404040;
 }
 
 h1 {
-    font-size: 24px;
-    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #ffffff;
+    font-weight: normal;
 }
 
-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.nav a {
+    color: #808080;
+    text-decoration: none;
+    border: 1px solid #404040;
+    padding: 6px 14px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.nav a:hover {
+    color: #ffffff;
+    border-color: #808080;
 }
 
 .file-listing {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    border: 1px solid #404040;
+    background-color: #0f0f0f;
 }
 
-.file-listing th,
-.file-listing td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
+.file-listing thead {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #404040;
 }
 
 .file-listing th {
-    background-color: #333;
-    color: white;
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: normal;
+    color: #ffffff;
+    font-size: 0.9rem;
 }
 
-.file-listing tr:nth-child(even) {
-    background-color: #f9f9f9;
+.file-listing td {
+    padding: 15px;
+    border-top: 1px solid #404040;
+    font-size: 0.9rem;
 }
 
-.file-listing tr:hover {
-    background-color: #f1f1f1;
+.file-listing tbody tr {
+    border: 1px solid transparent;
+    transition: all 0.2s;
 }
 
-.file-listing td a {
-    color: #0288d1;
+.file-listing tbody tr:hover {
+    background-color: #1a1a1a;
+    border: 1px solid #606060;
+}
+
+.file-listing a {
+    color: #c0c0c0;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.file-listing a:hover {
+    color: #ffffff;
+}
+
+.file-listing td:nth-child(1) {
+    color: #ffffff;
+}
+
+.file-listing td:nth-child(2),
+.file-listing td:nth-child(3) {
+    color: #606060;
+}
+
+footer {
+    margin-top: 50px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #404040;
+}
+
+footer a {
+    color: #808080;
     text-decoration: none;
 }
 
-.file-listing td a:hover {
-    text-decoration: underline;
+footer a:hover {
+    color: #c0c0c0;
 }
