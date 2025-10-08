@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"html/template"
 	"log"
 	"time"
 
@@ -9,13 +10,15 @@ import (
 )
 
 type FileData struct {
-	Name          string
-	Path          string
-	Extension     string
-	Content       string
-	ModTimeStr    string
-	ModTime       time.Time
-	FormattedSize string
+	Name               string
+	Path               string
+	Extension          string
+	ModTimeStr         string
+	ModTime            time.Time
+	FormattedSize      string
+	Content            string
+	HighlightedContent template.HTML
+	UploadedDate       string
 }
 
 type Config struct {

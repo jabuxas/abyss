@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>abyss paste - {{if .data}}{{.data.Name}}{{end}}</title>
     <link rel="stylesheet" type="text/css" href="/static/fileDisplay.css" />
+    <style>
+    </style>
   </head>
-
   <body>
     <header>
       <nav class="nav-home">
@@ -18,29 +19,37 @@
       <div></div>
     </header>
     <div class="content">
-      {{if .data}} {{if eq .data.Extension "text"}}
-      <pre>{{.data.Content}}</pre>
+      {{if .data}} 
+      {{if eq .data.Extension "text"}}
+        {{if .data.HighlightedContent}}
+          <div class="code-wrapper">
+            {{.data.HighlightedContent}}
+          </div>
+        {{else}}
+          <pre>{{.data.Content}}</pre>
+        {{end}}
       {{else if eq .data.Extension "image"}}
-      <img src="{{.data.Path}}" alt="Image: {{.data.Name}}" />
+        <img src="{{.data.Path}}" alt="Image: {{.data.Name}}" />
       {{else if eq .data.Extension "pdf"}}
-      <embed src="{{.data.Path}}" type="application/pdf" class="pdf-embed" />
+        <embed src="{{.data.Path}}" type="application/pdf" class="pdf-embed" />
       {{else if eq .data.Extension "video"}}
-      <video controls>
-        <source src="{{.data.Path}}" />
-        Your browser does not support the video tag.
-      </video>
+        <video controls>
+          <source src="{{.data.Path}}" />
+          Your browser does not support the video tag.
+        </video>
       {{else if eq .data.Extension "audio"}}
-      <audio controls src="{{.data.Path}}"></audio>
+        <audio controls src="{{.data.Path}}"></audio>
       {{else}}
-      <p>
-        File type '{{.data.Extension}}' cannot be displayed directly. Visit
-        <a href="{{.data.Path}}">this link</a> to see/download your file
-        '{{.data.Name}}'.
-      </p>
-      {{end}} {{else}}
-      <p>Error: File data not available.</p>
+        <p>
+          File type '{{.data.Extension}}' cannot be displayed directly. Visit
+          <a href="{{.data.Path}}">this link</a> to see/download your file
+          '{{.data.Name}}'.
+        </p>
+      {{end}} 
+      {{else}}
+        <p>Error: File data not available.</p>
       {{end}}
     </div>
-    <footer>{{if .data}}file uploaded on {{.data.UploadedDate}}{{end}}</footer>
+    <footer>{{if .data}}file uploaded on {{.data.ModTimeStr}}{{end}}</footer>
   </body>
 </html>
