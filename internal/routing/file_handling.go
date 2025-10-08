@@ -22,7 +22,7 @@ import (
 var customStyle *chroma.Style
 
 func init() {
-	customStyle = loadCustomStyle("assets/colorscheme.xml")
+	customStyle = loadCustomStyle("assets/templates/colorscheme.xml")
 }
 
 func loadCustomStyle(path string) *chroma.Style {
@@ -70,6 +70,7 @@ func highlightCode(code, filename string) (template.HTML, error) {
 		html.Standalone(false),
 		html.WithLineNumbers(true),
 		html.WithLinkableLineNumbers(true, ""),
+		html.WrapLongLines(false),
 	)
 
 	iterator, err := lexer.Tokenise(nil, code)

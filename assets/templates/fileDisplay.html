@@ -4,14 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>abyss paste - {{if .data}}{{.data.Name}}{{end}}</title>
-    <link rel="stylesheet" type="text/css" href="/static/fileDisplay.css" />
-    <style>
-    </style>
+    <link href="/static/fileDisplay.css" rel="stylesheet" />
   </head>
   <body>
     <header>
       <nav class="nav-home">
-        <a href="/">Home</a>
+        <a href="/">home</a>
       </nav>
       <div class="path">
         {{if .data}}{{.data.Path}}{{else}}Loading...{{end}}
