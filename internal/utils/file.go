@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func DetectFileType(filename string) string {
@@ -64,4 +65,12 @@ func FormatFileSize(size int64) string {
 	default:
 		return fmt.Sprintf("%d B", size)
 	}
+}
+
+func HashedName() string {
+	var hash int
+	for _, char := range time.Now().String() {
+		hash = (hash << 3) - hash + int(char)
+	}
+	return strings.ToUpper(fmt.Sprintf("%x", hash)[0:5])
 }

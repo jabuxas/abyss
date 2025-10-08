@@ -6,18 +6,19 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jabuxas/abyss/internal/utils"
 )
 
-func IndexHandler(c *gin.Context) {
+func indexHandler(c *gin.Context) {
 	c.File("assets/static/index.html")
 }
 
-func ServeFileHandler(c *gin.Context) {
+func serveFileHandler(c *gin.Context) {
 	filename := c.Param("file")
-	filePath := "./files/new/" + filename
+	filePath := cfg.FilesDir + filename
 
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
@@ -32,10 +33,10 @@ func ServeFileHandler(c *gin.Context) {
 	}
 
 	fileData := FileData{
-		Name:         filename,
-		Path:         "/raw/" + filename,
-		Extension:    fileType,
-		UploadedDate: fileInfo.ModTime().Format("2001-01-01 00:00:00"),
+		Name:       filename,
+		Path:       "/raw/" + filename,
+		Extension:  fileType,
+		ModTimeStr: fileInfo.ModTime().Format("2001-01-01 00:00:00"),
 	}
 
 	if fileType == "text" {
@@ -50,26 +51,25 @@ func ServeFileHandler(c *gin.Context) {
 	})
 }
 
-func ServeRawFileHandler(c *gin.Context) {
+func serveRawFileHandler(c *gin.Context) {
 	file := c.Param("file")
 	log.Println("Serving file:", file)
-	c.File("./files/new/" + file)
+	c.File(cfg.FilesDir + file)
 }
 
-func UploadFileHandler(c *gin.Context) {
-	if !IsAuthorized(c) {
+func uploadFileHandler(c *gin.Context) {
+	if !isAuthorized(c) {
 		c.String(http.StatusUnauthorized, "unauthorized")
 		return
 	}
 	file, _ := c.FormFile("file")
-	c.SaveUploadedFile(file, "./files/new/"+file.Filename)
+	c.SaveUploadedFile(file, cfg.FilesDir+utils.HashedName())
 	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
 
-func ListFilesHandler(c *gin.Context) {
-	dirPath := "./files/new"
-
-	dirEntries, err := os.ReadDir(dirPath)
+func listFilesHandler(c *gin.Context) {
+	log.Println("Listing files in directory:", cfg.FilesDir)
+	dirEntries, err := os.ReadDir(cfg.FilesDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			c.String(http.StatusNotFound, "directory not found")
@@ -96,14 +96,19 @@ func ListFilesHandler(c *gin.Context) {
 		fileInfos = append(fileInfos, FileData{
 			Name:          entry.Name(),
 			Path:          linkPath,
-			UploadedDate:  info.ModTime().UTC().Format("2006-01-02 15:04:05 UTC"),
+			ModTimeStr:    info.ModTime().UTC().Format("2006-01-02 15:04:05 UTC"),
+			ModTime:       info.ModTime(),
 			FormattedSize: utils.FormatFileSize(info.Size()),
 			Extension:     filepath.Ext(entry.Name()),
 		})
 	}
 
+	sort.Slice(fileInfos, func(i, j int) bool {
+		return fileInfos[i].ModTime.After(fileInfos[j].ModTime)
+	})
+
 	c.HTML(http.StatusOK, "fileList.html", gin.H{
 		"Files": fileInfos,
-		"URL":   "localhost",
+		"URL":   cfg.AbyssURL,
 	})
 }

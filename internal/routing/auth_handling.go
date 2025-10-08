@@ -10,12 +10,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateJWTToken(c *gin.Context) {
+func generateJWTToken(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp": time.Now().Add(2 * time.Hour).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte(KEY))
+	tokenString, err := token.SignedString([]byte(cfg.UploadKey))
 	if err != nil {
 		c.String(http.StatusInternalServerError, "could not generate token")
 		return
@@ -23,7 +23,7 @@ func GenerateJWTToken(c *gin.Context) {
 	c.String(http.StatusOK, fmt.Sprintf("%s", tokenString))
 }
 
-func IsAuthorized(c *gin.Context) bool {
+func isAuthorized(c *gin.Context) bool {
 	auth := c.GetHeader("X-Auth")
 	if auth == "" {
 		auth = c.PostForm("auth")
@@ -44,7 +44,7 @@ func IsAuthorized(c *gin.Context) bool {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(KEY), nil
+		return []byte(cfg.UploadKey), nil
 	})
 
 	if err != nil {

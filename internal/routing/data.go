@@ -1,10 +1,42 @@
 package routing
 
+import (
+	"log"
+	"time"
+
+	"github.com/caarlos0/env/v6"
+	"github.com/joho/godotenv"
+)
+
 type FileData struct {
 	Name          string
 	Path          string
 	Extension     string
 	Content       string
-	UploadedDate  string
+	ModTimeStr    string
+	ModTime       time.Time
 	FormattedSize string
+}
+
+type Config struct {
+	AbyssURL     string `env:"ABYSS_URL" envDefault:"localhost"`
+	UploadKey    string `env:"UPLOAD_KEY,required"`
+	FilesDir     string `env:"ABYSS_FILEDIR" envDefault:"./files"`
+	Port         string `env:"ABYSS_PORT" envDefault:"3235"`
+	AuthUsername string `env:"AUTH_USERNAME" envDefault:"admin"`
+	AuthPassword string `env:"AUTH_PASSWORD" envDefault:"changeme"`
+}
+
+func newConfig() (*Config, error) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("no .env file found, reading from environment variables")
+	}
+
+	cfg := &Config{}
+	if err := env.Parse(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }

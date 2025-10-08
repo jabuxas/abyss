@@ -16,7 +16,7 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Time Uploaded</th>
+          <th>Upload Date</th>
           <th>Size</th>
         </tr>
       </thead>
@@ -26,7 +26,7 @@
           <td>
             <a href="{{.Path}}">{{.Name}}</a>
           </td>
-          <td>{{.TimeUploaded}}</td>
+          <td>{{.ModTimeStr}}</td>
           <td>{{.FormattedSize}}</td>
         </tr>
         {{end}}
