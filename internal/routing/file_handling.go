@@ -17,6 +17,31 @@ func indexHandler(c *gin.Context) {
 	c.File("assets/static/index.html")
 }
 
+func deleteFileHandler(c *gin.Context) {
+	filename := c.Param("file")
+	filePath := filepath.Join(CFG.FilesDir, filename)
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		c.String(http.StatusNotFound, "file not found")
+		return
+	}
+
+	err := os.Remove(filePath)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "failed to delete file")
+		return
+	}
+
+	err = os.Remove(utils.JsonPathFromFilePath(filePath))
+	if os.IsNotExist(err) {
+		// metadata file doesn't exist, nothing to do
+	} else if err != nil {
+		log.Printf("failed to delete metadata file: %v", err)
+	}
+
+	c.String(http.StatusOK, "file deleted successfully")
+}
+
 func serveFileHandler(c *gin.Context) {
 	filename := c.Param("file")
 	filePath := filepath.Join(CFG.FilesDir, filename)

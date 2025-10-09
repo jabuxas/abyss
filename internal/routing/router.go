@@ -36,6 +36,7 @@ func GetRouter() gin.Engine {
 
 	authorized.GET("/token", generateJWTToken)
 	authorized.GET("/all", listFilesHandler)
+	authorized.POST("/delete/:file", deleteFileHandler)
 
 	return *r
 }

@@ -31,6 +31,16 @@
             </td>
             <td>{{.ModTimeStr}}</td>
             <td>{{.FormattedSize}}</td>
+            <td>
+              <form
+                action="/delete/{{.Name}}"
+                method="POST"
+                style="display: inline"
+              >
+                <input type="hidden" name="_method" value="DELETE" />
+                <button type="submit">delete</button>
+              </form>
+            </td>
           </tr>
           {{end}}
         </tbody>
