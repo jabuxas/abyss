@@ -1,4 +1,4 @@
-name: Build and Push Docker Image (latest)
+name: build and push docker image (:latest)
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           echo "DOCKER_BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
           echo "DOCKER_BUILT_BY=${BUILT_BY}" >> $GITHUB_ENV
 
-          echo "Docker Build Info: Version=${GIT_VERSION}, Commit=${GIT_COMMIT}, Date=${BUILD_DATE}"
+          echo "Docker Build Info: Version=${GIT_VERSION}, Commit=${GIT_COMMIT}, Date=${BUILD_DATE}, BuiltBy=${BUILT_BY}"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -51,7 +51,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/abyss:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/abyss:latest
+            ghcr.io/${{ github.repository_owner }}/abyss:${{ env.DOCKER_APP_VERSION }}
           build-args: |
             APP_VERSION=${{ env.DOCKER_APP_VERSION }}
             GIT_COMMIT=${{ env.DOCKER_GIT_COMMIT }}

@@ -1,4 +1,4 @@
-name: Build and Push Docker Image on Tag
+name: build and push docker image on tag
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
       - name: Generate Build Information for Docker
         id: build_info_docker
         run: |
-          GIT_VERSION=${{ github.ref_name }} 
+          GIT_VERSION=${{ github.ref_name }}
           GIT_COMMIT=$(git rev-parse HEAD)
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           BUILT_BY="github-actions-tag-build"
@@ -33,7 +33,7 @@ jobs:
           echo "DOCKER_BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
           echo "DOCKER_BUILT_BY=${BUILT_BY}" >> $GITHUB_ENV
 
-          echo "Docker Build Info: Version=${GIT_VERSION}, Commit=${GIT_COMMIT}, Date=${BUILD_DATE}"
+          echo "Docker Build Info: Version=${GIT_VERSION}, Commit=${GIT_COMMIT}, Date=${BUILD_DATE}, BuiltBy=${BUILT_BY}"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -42,16 +42,18 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx (for potentially building multi-arch later, good practice)
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image for tag
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/abyss:${{ github.ref_name }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/abyss:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/abyss:latest
           build-args: |
             APP_VERSION=${{ env.DOCKER_APP_VERSION }}
             GIT_COMMIT=${{ env.DOCKER_GIT_COMMIT }}
