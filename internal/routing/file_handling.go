@@ -158,8 +158,20 @@ func uploadFileHandler(c *gin.Context) {
 		return
 	}
 	file, _ := c.FormFile("file")
-	secretName := len(c.Request.Form["secret"]) > 0
-	fileName := utils.HashedName(file.Filename, secretName)
+
+	var fileName string
+	if customName := c.Request.FormValue("custom_name"); customName != "" {
+		sanitized := filepath.Base(customName)
+		if filepath.Ext(sanitized) == "" && filepath.Ext(file.Filename) != "" {
+			sanitized = sanitized + filepath.Ext(file.Filename)
+		}
+
+		fileName = sanitized
+	} else {
+		secretName := len(c.Request.Form["secret"]) > 0
+		fileName = utils.HashedName(file.Filename, secretName)
+	}
+
 	savePath := filepath.Join(CFG.FilesDir, fileName)
 
 	c.SaveUploadedFile(file, savePath)

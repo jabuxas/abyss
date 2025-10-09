@@ -286,4 +286,4 @@ Metadata includes:
 - [X] paste file expiration time
 - [X] password protection for viewing a pasted file
 - [X] button to delete a paste in /tree
-- [ ] custom url for an upload
+- [X] custom url for an upload
