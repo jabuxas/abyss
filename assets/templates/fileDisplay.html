@@ -12,7 +12,7 @@
         <a href="/">home</a>
       </nav>
       <div class="path">
-        {{if .data}}{{.data.Path}}{{else}}Loading...{{end}}
+        <a href="{{.data.Path}}" class="path"> {{.data.Path}} </a>
       </div>
       <div></div>
     </header>

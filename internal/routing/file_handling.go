@@ -171,20 +171,20 @@ func uploadFileHandler(c *gin.Context) {
 	if len(c.Request.Form["expiration"]) > 0 {
 		expiry, err = utils.ParseExpiration(c.Request.FormValue("expiration"))
 		if err != nil {
-			// idk yet
+			log.Println("failed to parse expiration:", err)
 		}
 	}
 
 	if len(c.Request.Form["password"]) > 0 {
 		passwordHash, err = utils.ParsePassword(c.Request.FormValue("password"))
 		if err != nil {
-			// idk yet
+			log.Println("failed to hash password:", err)
 		}
 	}
 
 	err = utils.SaveMetadata(savePath, expiry, passwordHash)
 	if err != nil {
-		// idk
+		log.Println("failed to save metadata:", err)
 	}
 
 	scheme := "http"
