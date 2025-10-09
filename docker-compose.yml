@@ -2,12 +2,13 @@ services:
   paste:
     image: ghcr.io/jabuxas/abyss:latest
     # build: .
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "3235:3235"
     volumes:
       - ./files:/app/files
 
-      # Optional overrides for themes
+      # optional overrides for themes
       # - ./custom:/app/assets:ro
     env_file:
       - .env
