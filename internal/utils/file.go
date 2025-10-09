@@ -85,7 +85,7 @@ func HashedName(filename string, hardToGuess bool) string {
 	}
 	name := fmt.Sprintf("%x", hash)
 	if !hardToGuess {
-		name = filename[0:5]
+		name = name[0:5]
 	}
 	return fmt.Sprint(strings.ToUpper(name), filepath.Ext(filename))
 }

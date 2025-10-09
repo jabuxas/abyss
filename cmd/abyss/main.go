@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	router := routing.GetRouter()
+
 	go func() {
 		ticker := time.NewTicker(30 * time.Minute)
 		defer ticker.Stop()
@@ -19,6 +21,5 @@ func main() {
 		}
 	}()
 
-	router := routing.GetRouter()
 	router.Run(":3235")
 }
