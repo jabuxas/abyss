@@ -6,12 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var cfg *Config
+var CFG *Config
 
 func GetRouter() gin.Engine {
 	var err error
 
-	cfg, err = newConfig()
+	CFG, err = newConfig()
 	if err != nil {
 		log.Println("failed to load config from environment variables or .env file, did you run generate_config.sh?")
 		log.Panic("error loading config:", err)
@@ -28,7 +28,7 @@ func GetRouter() gin.Engine {
 	r.POST("/upload", uploadFileHandler)
 
 	authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
-		cfg.AuthUsername: cfg.AuthPassword,
+		CFG.AuthUsername: CFG.AuthPassword,
 	}))
 
 	authorized.GET("/token", generateJWTToken)

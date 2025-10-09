@@ -19,7 +19,7 @@ func indexHandler(c *gin.Context) {
 
 func serveFileHandler(c *gin.Context) {
 	filename := c.Param("file")
-	filePath := filepath.Join(cfg.FilesDir, filename)
+	filePath := filepath.Join(CFG.FilesDir, filename)
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		c.String(http.StatusNotFound, "file not found")
@@ -62,7 +62,7 @@ func serveFileHandler(c *gin.Context) {
 func serveRawFileHandler(c *gin.Context) {
 	file := c.Param("file")
 	log.Println("Serving file:", file)
-	c.File(filepath.Join(cfg.FilesDir, file))
+	c.File(filepath.Join(CFG.FilesDir, file))
 }
 
 func uploadFileHandler(c *gin.Context) {
@@ -72,7 +72,7 @@ func uploadFileHandler(c *gin.Context) {
 	}
 	file, _ := c.FormFile("file")
 	fileName := utils.HashedName(file.Filename)
-	savePath := filepath.Join(cfg.FilesDir, fileName)
+	savePath := filepath.Join(CFG.FilesDir, fileName)
 
 	c.SaveUploadedFile(file, savePath)
 
@@ -110,7 +110,7 @@ func uploadFileHandler(c *gin.Context) {
 }
 
 func listFilesHandler(c *gin.Context) {
-	dirEntries, err := os.ReadDir(cfg.FilesDir)
+	dirEntries, err := os.ReadDir(CFG.FilesDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			c.String(http.StatusNotFound, "directory not found")
@@ -148,6 +148,6 @@ func listFilesHandler(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "fileList.html", gin.H{
 		"Files": fileInfos,
-		"URL":   cfg.AbyssURL,
+		"URL":   CFG.AbyssURL,
 	})
 }

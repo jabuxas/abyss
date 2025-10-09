@@ -15,7 +15,7 @@ func generateJWTToken(c *gin.Context) {
 		"exp": time.Now().Add(2 * time.Hour).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte(cfg.UploadKey))
+	tokenString, err := token.SignedString([]byte(CFG.UploadKey))
 	if err != nil {
 		c.String(http.StatusInternalServerError, "could not generate token")
 		return
@@ -36,7 +36,7 @@ func isAuthorized(c *gin.Context) bool {
 		return false
 	}
 
-	if subtle.ConstantTimeCompare([]byte(auth), []byte(cfg.UploadKey)) == 1 {
+	if subtle.ConstantTimeCompare([]byte(auth), []byte(CFG.UploadKey)) == 1 {
 		return true
 	}
 
@@ -44,7 +44,7 @@ func isAuthorized(c *gin.Context) bool {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(cfg.UploadKey), nil
+		return []byte(CFG.UploadKey), nil
 	})
 
 	if err != nil {
