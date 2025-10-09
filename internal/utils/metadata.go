@@ -72,3 +72,25 @@ func SaveMetadata(path string, expiry *time.Time, passwordHash []byte) error {
 
 	return nil
 }
+
+func ReadMetadata(filePath string) (*FileMetadata, error) {
+	jsonPath := JsonPathFromFilePath(filePath)
+
+	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+		return &FileMetadata{}, nil
+	}
+
+	data, err := os.ReadFile(jsonPath)
+	if err != nil {
+		slog.Error("failed to read metadata file", "path", jsonPath, "error", err)
+		return nil, err
+	}
+
+	var meta FileMetadata
+	if err := json.Unmarshal(data, &meta); err != nil {
+		slog.Error("failed to unmarshal metadata", "path", jsonPath, "error", err)
+		return nil, err
+	}
+
+	return &meta, nil
+}

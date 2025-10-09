@@ -20,12 +20,56 @@ func indexHandler(c *gin.Context) {
 func serveFileHandler(c *gin.Context) {
 	filename := c.Param("file")
 	filePath := filepath.Join(CFG.FilesDir, filename)
+
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		c.String(http.StatusNotFound, "file not found")
 		return
 	}
 
+	meta, err := utils.ReadMetadata(filePath)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "could not read file metadata")
+		return
+	}
+
+	isProtected := len(meta.PasswordHash) > 0
+
+	if !isProtected {
+		servePublicFile(c, filename, filePath, fileInfo)
+		return
+	}
+
+	sessionToken, err := c.Cookie(sessionCookieName)
+	if err == nil && GetSession(sessionToken, filename) {
+		servePublicFile(c, filename, filePath, fileInfo)
+		return
+	}
+
+	switch c.Request.Method {
+	case "GET":
+		c.HTML(http.StatusUnauthorized, "passwordPrompt.html", nil)
+	case "POST":
+		password := c.PostForm("password")
+		if utils.CheckPassword(password, meta.PasswordHash) {
+			token, err := NewSession(filename)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "failed to create session")
+				return
+			}
+			c.SetCookie(sessionCookieName, token, int(sessionDuration.Seconds()), "/", "", false, true)
+			c.Redirect(http.StatusFound, c.Request.URL.Path)
+		} else {
+			c.HTML(http.StatusUnauthorized, "passwordPrompt.html", gin.H{
+				"Error": "Invalid password. Please try again.",
+			})
+		}
+	default:
+		c.String(http.StatusMethodNotAllowed, "method not allowed")
+	}
+}
+
+func servePublicFile(c *gin.Context, filename, filePath string, fileInfo os.FileInfo) {
 	fileType := utils.DetectFileType(filename)
 	if fileType == "unknown" {
 		c.Redirect(http.StatusSeeOther, "/raw/"+filename)
@@ -54,15 +98,33 @@ func serveFileHandler(c *gin.Context) {
 		}
 	}
 
-	c.HTML(http.StatusOK, "fileDisplay.html", gin.H{
-		"data": fileData,
-	})
+	c.HTML(http.StatusOK, "fileDisplay.html", gin.H{"data": fileData})
 }
 
 func serveRawFileHandler(c *gin.Context) {
-	file := c.Param("file")
-	log.Println("Serving file:", file)
-	c.File(filepath.Join(CFG.FilesDir, file))
+	filename := c.Param("file")
+	filePath := filepath.Join(CFG.FilesDir, filename)
+
+	if _, err := os.Stat(filePath); err != nil {
+		c.String(http.StatusNotFound, "file not found")
+		return
+	}
+
+	meta, err := utils.ReadMetadata(filePath)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "could not read file metadata")
+		return
+	}
+
+	if len(meta.PasswordHash) > 0 {
+		sessionToken, err := c.Cookie(sessionCookieName)
+		if err != nil || !GetSession(sessionToken, filename) {
+			c.String(http.StatusUnauthorized, "unauthorized: password required")
+			return
+		}
+	}
+
+	c.File(filePath)
 }
 
 func uploadFileHandler(c *gin.Context) {

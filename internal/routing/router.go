@@ -23,7 +23,10 @@ func GetRouter() gin.Engine {
 	r.Static("/static", "./assets/static")
 
 	r.GET("/", indexHandler)
+
 	r.GET("/:file", serveFileHandler)
+	r.POST("/:file", serveFileHandler)
+
 	r.GET("/raw/:file", serveRawFileHandler)
 	r.POST("/upload", uploadFileHandler)
 
