@@ -1,130 +1,129 @@
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-      body {
-        font-family: "Courier New", monospace;
-        background-color: #0a0a0a;
-        color: #c0c0c0;
-        padding: 40px 20px;
-      }
+body {
+  font-family: "Courier New", monospace;
+  background-color: #0a0a0a;
+  color: #c0c0c0;
+  padding: 40px 20px;
+}
 
-      .container {
-        max-width: 900px;
-        margin: 0 auto;
-      }
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
 
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 40px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #404040;
-      }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #404040;
+}
 
-      h1 {
-        font-size: 1.2rem;
-        color: #ffffff;
-        font-weight: normal;
-      }
+h1 {
+  font-size: 1.2rem;
+  color: #ffffff;
+  font-weight: normal;
+}
 
-      .nav a {
-        color: #808080;
-        text-decoration: none;
-        border: 1px solid #404040;
-        padding: 6px 14px;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-      }
+.nav a {
+  color: #808080;
+  text-decoration: none;
+  border: 1px solid #404040;
+  padding: 6px 14px;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
 
-      .nav a:hover {
-        color: #ffffff;
-        border-color: #808080;
-      }
+.nav a:hover {
+  color: #ffffff;
+  border-color: #808080;
+}
 
-      .file-listing {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        border: 1px solid #404040;
-        background-color: #0f0f0f;
-      }
+.file-listing {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #404040;
+  background-color: #0f0f0f;
+}
 
-      .file-listing thead {
-        background-color: #1a1a1a;
-      }
+.file-listing thead {
+  background-color: #1a1a1a;
+}
 
-      .file-listing th {
-        text-align: left;
-        padding: 12px 15px;
-        font-weight: normal;
-        color: #ffffff;
-        font-size: 0.9rem;
-        border-bottom: 1px solid #404040;
-      }
+.file-listing th {
+  text-align: left;
+  padding: 12px 15px;
+  font-weight: normal;
+  color: #ffffff;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #404040;
+}
 
-      .file-listing td {
-        padding: 15px;
-        font-size: 0.9rem;
-      }
+.file-listing td {
+  padding: 15px;
+  font-size: 0.9rem;
+}
 
-      .file-listing tbody tr {
-        background-color: #0f0f0f;
-        transition: all 0.2s;
-      }
+.file-listing tbody tr {
+  background-color: #0f0f0f;
+  transition: all 0.2s;
+}
 
-      .file-listing tbody tr + tr td {
-        border-top: 1px solid #404040;
-      }
+.file-listing tbody tr + tr td {
+  border-top: 1px solid #404040;
+}
 
-      .file-listing tbody tr:hover {
-        background-color: #1a1a1a;
-      }
+.file-listing tbody tr:hover {
+  background-color: #1a1a1a;
+}
 
-      .file-listing tbody tr:hover td {
-        border-top-color: #808080;
-        border-bottom: 1px solid #808080;
-      }
+.file-listing tbody tr:hover td {
+  border-top-color: #808080;
+  border-bottom: 1px solid #808080;
+}
 
-      .file-listing tbody tr:hover + tr td {
-        border-top-color: #808080;
-      }
+.file-listing tbody tr:hover + tr td {
+  border-top-color: #808080;
+}
 
-      .file-listing a {
-        color: #c0c0c0;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
+.file-listing a {
+  color: #c0c0c0;
+  text-decoration: none;
+  transition: color 0.2s;
+}
 
-      .file-listing a:hover {
-        color: #ffffff;
-      }
+.file-listing a:hover {
+  color: #ffffff;
+}
 
-      .file-listing td:nth-child(1) {
-        color: #ffffff;
-      }
+.file-listing td:nth-child(1) {
+  color: #ffffff;
+}
 
-      .file-listing td:nth-child(2),
-      .file-listing td:nth-child(3) {
-        color: #606060;
-      }
+.file-listing td:nth-child(2),
+.file-listing td:nth-child(3) {
+  color: #606060;
+}
 
-      footer {
-        margin-top: 50px;
-        text-align: center;
-        font-size: 0.8rem;
-        color: #404040;
-      }
+footer {
+  margin-top: 50px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #404040;
+}
 
-      footer a {
-        color: #808080;
-        text-decoration: none;
-      }
+footer a {
+  color: #808080;
+  text-decoration: none;
+}
 
-      footer a:hover {
-        color: #c0c0c0;
-      }
-    
+footer a:hover {
+  color: #c0c0c0;
+}

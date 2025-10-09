@@ -61,7 +61,7 @@ func serveFileHandler(c *gin.Context) {
 			c.Redirect(http.StatusFound, c.Request.URL.Path)
 		} else {
 			c.HTML(http.StatusUnauthorized, "passwordPrompt.html", gin.H{
-				"Error": "Invalid password. Please try again.",
+				"Error": "invalid password. please, try again.",
 			})
 		}
 	default:
