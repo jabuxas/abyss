@@ -1,11 +1,22 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
+	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 )
+
+var customStyle *chroma.Style
 
 func DetectFileType(filename string) string {
 	ext := strings.ToLower(filepath.Ext(filename))
@@ -73,4 +84,70 @@ func HashedName(filename string) string {
 		hash = (hash << 3) - hash + int(char)
 	}
 	return fmt.Sprint(strings.ToUpper(fmt.Sprintf("%x", hash)[0:5]), filepath.Ext(filename))
+}
+
+func init() {
+	customStyle = loadCustomStyle("assets/templates/colorscheme.xml")
+}
+
+func loadCustomStyle(path string) *chroma.Style {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Printf("failed to load custom style: %v, using fallback", err)
+		return styles.Get("monokai")
+	}
+
+	style, err := chroma.NewXMLStyle(strings.NewReader(string(data)))
+	if err != nil {
+		log.Printf("failed to parse custom style: %v, using fallback", err)
+		return styles.Get("monokai")
+	}
+
+	return style
+}
+
+func detectLexer(filename, content string) chroma.Lexer {
+	ext := filepath.Ext(filename)
+	if ext != "" {
+		lexer := lexers.Match(filename)
+		if lexer != nil {
+			return lexer
+		}
+	}
+
+	if content != "" {
+		lexer := lexers.Analyse(content)
+		if lexer != nil {
+			return lexer
+		}
+	}
+
+	return lexers.Fallback
+}
+
+func HighlightCode(code, filename string) (template.HTML, error) {
+	lexer := detectLexer(filename, code)
+
+	lexer = chroma.Coalesce(lexer)
+
+	formatter := html.New(
+		html.WithClasses(false),
+		html.Standalone(false),
+		html.WithLineNumbers(true),
+		html.WithLinkableLineNumbers(true, ""),
+		html.WrapLongLines(false),
+	)
+
+	iterator, err := lexer.Tokenise(nil, code)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	err = formatter.Format(&buf, customStyle, iterator)
+	if err != nil {
+		return "", err
+	}
+
+	return template.HTML(buf.String()), nil
 }

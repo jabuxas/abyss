@@ -1,91 +1,17 @@
 package routing
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
+	"time"
 
-	"github.com/alecthomas/chroma/v2"
-	"github.com/alecthomas/chroma/v2/formatters/html"
-	"github.com/alecthomas/chroma/v2/lexers"
-	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/gin-gonic/gin"
 	"github.com/jabuxas/abyss/internal/utils"
 )
-
-var customStyle *chroma.Style
-
-func init() {
-	customStyle = loadCustomStyle("assets/templates/colorscheme.xml")
-}
-
-func loadCustomStyle(path string) *chroma.Style {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Printf("failed to load custom style: %v, using fallback", err)
-		return styles.Get("monokai")
-	}
-
-	style, err := chroma.NewXMLStyle(strings.NewReader(string(data)))
-	if err != nil {
-		log.Printf("failed to parse custom style: %v, using fallback", err)
-		return styles.Get("monokai")
-	}
-
-	return style
-}
-
-func detectLexer(filename, content string) chroma.Lexer {
-	ext := filepath.Ext(filename)
-	if ext != "" {
-		lexer := lexers.Match(filename)
-		if lexer != nil {
-			return lexer
-		}
-	}
-
-	if content != "" {
-		lexer := lexers.Analyse(content)
-		if lexer != nil {
-			return lexer
-		}
-	}
-
-	return lexers.Fallback
-}
-
-func highlightCode(code, filename string) (template.HTML, error) {
-	lexer := detectLexer(filename, code)
-
-	lexer = chroma.Coalesce(lexer)
-
-	formatter := html.New(
-		html.WithClasses(false),
-		html.Standalone(false),
-		html.WithLineNumbers(true),
-		html.WithLinkableLineNumbers(true, ""),
-		html.WrapLongLines(false),
-	)
-
-	iterator, err := lexer.Tokenise(nil, code)
-	if err != nil {
-		return "", err
-	}
-
-	var buf bytes.Buffer
-	err = formatter.Format(&buf, customStyle, iterator)
-	if err != nil {
-		return "", err
-	}
-
-	return template.HTML(buf.String()), nil
-}
 
 func indexHandler(c *gin.Context) {
 	c.File("assets/static/index.html")
@@ -118,7 +44,7 @@ func serveFileHandler(c *gin.Context) {
 		if err == nil {
 			fileData.Content = string(content)
 
-			highlighted, err := highlightCode(fileData.Content, filename)
+			highlighted, err := utils.HighlightCode(fileData.Content, filename)
 			if err != nil {
 				log.Printf("failed to highlight code: %v", err)
 				fileData.Content = string(content)
@@ -147,7 +73,31 @@ func uploadFileHandler(c *gin.Context) {
 	file, _ := c.FormFile("file")
 	fileName := utils.HashedName(file.Filename)
 	savePath := filepath.Join(cfg.FilesDir, fileName)
+
 	c.SaveUploadedFile(file, savePath)
+
+	var expiry *time.Time
+	var passwordHash []byte
+	var err error
+
+	if len(c.Request.Form["expiration"]) > 0 {
+		expiry, err = utils.ParseExpiration(c.Request.FormValue("expiration"))
+		if err != nil {
+			// idk yet
+		}
+	}
+
+	if len(c.Request.Form["password"]) > 0 {
+		passwordHash, err = utils.ParsePassword(c.Request.FormValue("password"))
+		if err != nil {
+			// idk yet
+		}
+	}
+
+	err = utils.SaveMetadata(savePath, expiry, passwordHash)
+	if err != nil {
+		// idk
+	}
 
 	scheme := "http"
 	if c.Request.TLS != nil {
