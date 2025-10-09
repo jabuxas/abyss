@@ -145,9 +145,18 @@ func uploadFileHandler(c *gin.Context) {
 		return
 	}
 	file, _ := c.FormFile("file")
-	newName := filepath.Join(cfg.FilesDir, utils.HashedName(file.Filename))
-	c.SaveUploadedFile(file, newName)
-	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", newName))
+	fileName := utils.HashedName(file.Filename)
+	savePath := filepath.Join(cfg.FilesDir, fileName)
+	c.SaveUploadedFile(file, savePath)
+
+	scheme := "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+
+	fullURL := fmt.Sprintf("%s://%s/%s", scheme, c.Request.Host, fileName)
+
+	c.String(http.StatusOK, fullURL+"\n")
 }
 
 func listFilesHandler(c *gin.Context) {
