@@ -9,6 +9,11 @@ abyss is a basic and /mostly/ single user pastebin server written in go made for
 
 -----
 
+[[./imgs/password.png]]
+/this is abyss' default password input for a protected file presentation/
+
+-----
+
 [[./imgs/file.png]]
 /this is abyss' default file presentation/
 
