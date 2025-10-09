@@ -1,0 +1,289 @@
+#+TITLE: abyss
+#+AUTHOR: jabuxas
+#+OPTIONS: toc:nil num:nil
+
+abyss is a basic and /mostly/ single user pastebin server written in go made for uploading files (logs, images) and then sharing them to the internet
+
+[[./imgs/home.png]]
+/this is abyss' default home page/
+
+-----
+
+[[./imgs/password.png]]
+/this is abyss' default password input for a protected file presentation/
+
+-----
+
+[[./imgs/file.png]]
+/this is abyss' default file presentation/
+
+-----
+
+[[./imgs/tree.png]]
+/this is abyss' default directory list/
+
+* Table of Contents :TOC:
+- [[#features][Features]]
+- [[#running][Running]]
+  - [[#recommended-setting-it-up][(Recommended) Setting it up]]
+  - [[#docker][Docker]]
+  - [[#directly][Directly]]
+- [[#uploading][Uploading]]
+  - [[#with-curl][With curl]]
+  - [[#through-the-browser][Through the browser]]
+- [[#theming][Theming]]
+- [[#docs][Docs]]
+  - [[#environment-variables][Environment Variables]]
+  - [[#api-endpoints][API Endpoints]]
+  - [[#file-storage][File Storage]]
+  - [[#security-features][Security Features]]
+- [[#todo][Todo]]
+
+* Features
+:PROPERTIES:
+:CUSTOM_ID: features
+:END:
+
+- *file uploads*: supports uploading various file types, including images, videos, and documents.
+- *flexible media display*: automatically renders uploaded files on a webpage based on their type (images, pdfs, videos, or plain text).
+- *easily customizable interface*: allows for easy modification of color schemes and layout to suit specific design needs.
+- *syntax highlighting for code*: syntax highlighting available by default for code files, with support for multiple programming languages.
+- *paste expiration*: set expiration times for uploads (10 minutes, 1 hour, 1 day, or never).
+- *password protection*: protect individual pastes with passwords using bcrypt hashing.
+- *session management*: secure cookie-based sessions for accessing password-protected files.
+- *automatic cleanup*: background task removes expired files every 30 minutes.
+- *jwt token authentication*: generate and use JWT tokens for uploads as an alternative to the main key.
+
+* Running
+:PROPERTIES:
+:CUSTOM_ID: running
+:END:
+
+** (Recommended) Setting it up
+:PROPERTIES:
+:CUSTOM_ID: recommended-setting-it-up
+:END:
+
+- clone the repository and cd into it:
+
+  #+begin_src bash
+  git clone https://github.com/jabuxas/abyss.git --depth 1 && cd abyss
+  #+end_src
+
+- then run ~./generate_config.sh~ to setup the necessary environment variables
+- after that, you can use either docker or run it directly
+
+** Docker
+:PROPERTIES:
+:CUSTOM_ID: docker
+:END:
+
+- to run with docker, you can use the ~docker-compose.yml~ file available in this repo. to do so, run:
+
+  #+begin_src bash
+  docker compose up -d # might be docker-compose depending on distro
+  #+end_src
+
+- you can optionally use the [[https://github.com/jabuxas/abyss/pkgs/container/abyss][docker image]] directly and set it up how you want
+
+** Directly
+:PROPERTIES:
+:CUSTOM_ID: directly
+:END:
+
+- to run it manually, build it with ~go build -o abyss ./cmd/abyss~ or grab a binary from github actions and run:
+
+  #+begin_src bash
+  ./abyss
+  #+end_src
+
+- you will need to either:
+  - create a ~.env~ file in ~$(pwd)~ and set up the necessary variables as in [[#docs][docs]]
+  - run it with the variables prepended: ~AUTH_USERNAME=admin AUTH_PASSWORD=admin UPLOAD_KEY=your-key ./abyss~ (example)
+- the server will automatically start a background cleanup task that runs every 30 minutes to remove expired files
+- and then (hopefully) create a service that does that automatically and runs ~abyss~
+
+* Uploading
+:PROPERTIES:
+:CUSTOM_ID: uploading
+:END:
+
+** With curl
+
+- you can upload both with the main key and with jwt tokens
+
+*** Main key
+
+- to upload your files with main key:
+
+  #+begin_src bash
+  curl -F "file=@/path/to/file" -H "X-Auth: $(cat /path/to/.key)" http://localhost:3235/upload
+  #+end_src
+
+- it is also possible to add a ~-Fsecret=~ to your POST to make filenames bigger and harder to guess.
+
+- to upload with expiration:
+
+  #+begin_src bash
+  curl -F "file=@/path/to/file" -F "expiration=1h" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/upload
+  #+end_src
+
+- to upload with password protection:
+
+  #+begin_src bash
+  curl -F "file=@/path/to/file" -F "password=mysecret" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/upload
+  #+end_src
+
+- you should probably create an ~alias~ or a ~function~ to do this automatically for you.
+
+*Example for bash/zsh:*
+
+#+begin_src bash
+pst() {
+  local file
+
+  if [[ -p /dev/stdin ]]; then
+    file=$(mktemp)
+    cat > "$file"
+  elif [[ -n $1 ]]; then
+    file="$1"
+  else
+    echo "Usage: pst [file]"
+    return 1
+  fi
+
+  curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/upload
+
+  if [[ -p /dev/stdin ]]; then
+    rm "$file"
+  fi
+}
+#+end_src
+
+*Example for fish shell:*
+
+#+begin_src fish
+function pst
+    set -l file
+
+    if command test -p /dev/stdin
+        set file "/tmp/tmp.txt"
+        cat > $file
+    else if test -n "$argv[1]"
+        set file "$argv[1]"
+    end
+
+    curl -F "file=@$file" -H "X-Auth: $(cat ~/.key)" http://localhost:3235/upload
+
+    if command test -p /dev/stdin
+        rm "$file"
+    end
+end
+#+end_src
+
+*** With JWT tokens
+
+- you first need to generate them:
+
+  #+begin_src bash
+  curl -u admin http://localhost:3235/token # you can also access the url in the browser directly
+  #+end_src
+
+- the user will be the value of ~$AUTH_USERNAME~ and password the value of ~$AUTH_PASSWORD~
+
+- tokens are valid for 2 hours after generation
+
+- then you use the token in place of the main key:
+
+  #+begin_src bash
+  curl -F "file=@/path/to/file.jpg" -H "X-Auth: your-token" http://localhost:3235/upload
+  #+end_src
+
+** Through the browser
+
+- you can upload files through the browser using the form at the homepage
+- the form supports:
+  - file selection
+  - expiration time (never, 10 minutes, 1 hour, 1 day)
+  - password protection (optional)
+  - authentication key (required)
+
+* Theming
+:PROPERTIES:
+:CUSTOM_ID: theming
+:END:
+
+- there is an example homepage in ~assets/static/~ you can edit directly, which the server will serve automatically
+- if running with docker, it's also possible to override ~/app/assets~ inside the container with your own files
+  - otherwise you will need to clone this repository and edit ~assets/static/~ and ~assets/templates/~ manually
+- templates are located in ~assets/templates/~
+  - ~fileDisplay.html~: template for displaying individual files
+  - ~fileList.html~: template for the directory listing at ~/all~
+  - ~passwordPrompt.html~: template for password-protected files
+  - ~colorscheme.xml~: syntax highlighting color scheme (used by chroma)
+- you can change the colorscheme by editing the xml at ~assets/templates/colorscheme.xml~
+- css files are in ~assets/static/~:
+  - ~style.css~: main homepage styles
+  - ~fileDisplay.css~: file display page styles
+  - ~fileList.css~: directory listing styles
+  - ~passwordPrompt.css~: password prompt styles
+
+* Docs
+:PROPERTIES:
+:CUSTOM_ID: docs
+:END:
+
+** Environment Variables
+
+- ~ABYSS_URL~: the base URL where your instance is accessible (used for generating response URLs). defaults to ~localhost~
+- ~AUTH_USERNAME~: username for basic auth on protected endpoints (~/token~, ~/all~). defaults to ~admin~
+- ~AUTH_PASSWORD~: password for basic auth on protected endpoints. defaults to ~changeme~
+- ~UPLOAD_KEY~: the secret key required in the ~X-Auth~ header for uploads (can also be sent via form or query parameter). *required*
+- ~ABYSS_FILEDIR~: directory where abyss will save uploads. defaults to ~./files~
+- ~ABYSS_PORT~: the port the server will listen on. defaults to ~3235~
+
+** API Endpoints
+
+- ~GET /~: serve the homepage
+- ~GET /:file~: display a file (with syntax highlighting for code, embedded for media)
+- ~POST /:file~: verify password for password-protected files
+- ~GET /raw/:file~: serve the raw file content
+- ~POST /upload~: upload a new file
+- ~GET /all~: list all uploaded files (requires basic auth)
+- ~GET /token~: generate a JWT token (requires basic auth)
+- ~GET /static/*~: serve static assets
+
+** File Storage
+
+Files are stored in the configured ~ABYSS_FILEDIR~ directory. For each uploaded file, a metadata file is created in ~ABYSS_FILEDIR/json/~ with the same name plus ~.json~ extension.
+
+Metadata includes:
+- ~expires_at~: expiration timestamp (if set)
+- ~password_hash~: bcrypt hash of the password (if set)
+
+** Security Features
+
+- passwords are hashed using bcrypt before storage
+- sessions use cryptographically secure random tokens
+- session tokens are valid for 1 hour
+- expired sessions are cleaned up every 10 minutes
+- JWT tokens are valid for 2 hours
+- constant-time comparison for upload key verification
+
+* Todo
+:PROPERTIES:
+:CUSTOM_ID: todo
+:END:
+
+- [X] add upload of logs functionality (like 0x0.st)
+- [X] add docker easy setup
+- [X] add file browser (like file://)
+- [X] add file extension in its name
+- [X] login prompt when accessing /tree
+- [X] home page
+- [X] custom file displaying!!
+- [X] syntax highlighting
+- [X] paste file expiration time
+- [X] password protection for viewing a pasted file
+- [X] button to delete a paste in /tree
+- [X] custom url for an upload

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dir listing</title>
+    <link href="/static/fileList.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>{{ .URL }}</h1>
+        <div class="nav">
+          <a href="/">back</a>
+        </div>
+      </div>
+
+      <table class="file-listing">
+        <thead>
+          <tr>
+            <th>name</th>
+            <th>upload date</th>
+            <th>size</th>
+            <th>actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Files}}
+          <tr>
+            <td>
+              <a href="{{.Path}}">{{.Name}}</a>
+            </td>
+            <td>{{.ModTimeStr}}</td>
+            <td>{{.FormattedSize}}</td>
+            <td>
+              <form
+                action="/delete/{{.Name}}"
+                method="POST"
+                style="display: inline"
+              >
+                <input type="hidden" name="_method" value="DELETE" />
+                <button type="submit">delete</button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+
+      <footer>
+        powered by
+        <a href="https://github.com/jabuxas/abyss" target="_blank">abyss</a>
+      </footer>
+    </div>
+  </body>
+</html>

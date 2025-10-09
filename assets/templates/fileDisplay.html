@@ -3,190 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ .PageTitle }} - abyss paste</title>
-
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-
-      body {
-        background-color: #1d1f21;
-        color: #c5c6c7;
-        font-family: "Arial", sans-serif;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-
-      header,
-      footer {
-        background-color: #2e2e2e;
-        color: #c5c6c7;
-        text-align: center;
-        font-size: 1rem;
-        font-weight: bold;
-        padding: 10px;
-        flex-shrink: 0;
-        z-index: 10;
-      }
-
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #444;
-      }
-
-      footer {
-        border-top: 1px solid #444;
-      }
-
-      .content {
-        flex-grow: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 15px;
-        box-sizing: border-box;
-        overflow-y: hidden;
-        overflow-x: hidden;
-      }
-
-      .content > * {
-        max-width: 100%;
-        max-height: 99%;
-        box-sizing: border-box;
-      }
-
-      img,
-      video {
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        object-fit: contain;
-      }
-
-      video {
-        background-color: #000;
-      }
-
-      .pdf-embed,
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-        border-radius: 8px;
-      }
-
-      pre {
-        width: 100%;
-        height: 100%;
-        white-space: pre;
-        font-family: monospace;
-        font-size: 0.9rem;
-
-        padding: 15px;
-        border-radius: 8px;
-        overflow: auto;
-        box-sizing: border-box;
-        scrollbar-width: thin;
-        scrollbar-color: #686868 #3a3a3a;
-      }
-
-      pre::-webkit-scrollbar {
-        width: 12px;
-        height: 12px;
-      }
-
-      pre::-webkit-scrollbar-track {
-        background: #3a3a3a;
-        border-radius: 10px;
-      }
-
-      pre::-webkit-scrollbar-thumb {
-        background-color: #686868;
-        border-radius: 10px;
-        border: 3px solid #3a3a3a;
-      }
-
-      header a,
-      footer a {
-        color: #66fcf1;
-        text-decoration: none;
-        filter: brightness(0.9);
-      }
-
-      header a:hover,
-      footer a:hover {
-        filter: brightness(1);
-        text-decoration: underline;
-      }
-
-      header .nav-home {
-        padding-right: 15px;
-      }
-
-      header .path {
-        text-align: center;
-        flex-grow: 1;
-        font-size: 0.9em;
-        color: #aaa;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .content p {
-        background-color: #2e2e2e;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-      }
-    </style>
+    <title>abyss paste - {{if .data}}{{.data.Name}}{{end}}</title>
+    <link href="/static/fileDisplay.css" rel="stylesheet" />
   </head>
-
   <body>
     <header>
       <nav class="nav-home">
-        <a href="/">Home</a>
+        <a href="/">home</a>
       </nav>
       <div class="path">
-        {{if .SingleFile}}{{.SingleFile.Path}}{{else}}Loading...{{end}}
+        <a href="{{.data.Path}}" class="path"> {{.data.Path}} </a>
       </div>
       <div></div>
     </header>
     <div class="content">
-      {{if .SingleFile}} {{if eq .SingleFile.Type "text"}}
-      {{.SingleFile.Content}} {{else if eq .SingleFile.Type "image"}}
-      <img src="/raw/{{.SingleFile.Name}}" alt="Image: {{.SingleFile.Name}}" />
-      {{else if eq .SingleFile.Type "pdf"}}
-      <embed
-        src="/raw/{{.SingleFile.Name}}"
-        type="application/pdf"
-        class="pdf-embed"
-      />
-      {{else if eq .SingleFile.Type "video"}}
+      {{if .data}} {{if eq .data.Extension "text"}} {{if
+      .data.HighlightedContent}}
+      <div class="code-wrapper">{{.data.HighlightedContent}}</div>
+      {{else}}
+      <pre>{{.data.Content}}</pre>
+      {{end}} {{else if eq .data.Extension "image"}}
+      <img src="{{.data.Path}}" alt="Image: {{.data.Name}}" />
+      {{else if eq .data.Extension "pdf"}}
+      <embed src="{{.data.Path}}" type="application/pdf" class="pdf-embed" />
+      {{else if eq .data.Extension "video"}}
       <video controls>
-        <source src="/raw/{{.SingleFile.Name}}" />
+        <source src="{{.data.Path}}" />
         Your browser does not support the video tag.
       </video>
-      {{else if eq .SingleFile.Type "audio"}}
-      <audio controls src="/raw/{{.SingleFile.Name}}"></audio>
+      {{else if eq .data.Extension "audio"}}
+      <audio controls src="{{.data.Path}}"></audio>
       {{else}}
       <p>
-        File type '{{.SingleFile.Type}}' cannot be displayed directly. Visit
-        <a href="{{.SingleFile.Path}}">this link</a> to see/download your file
-        '{{.SingleFile.Name}}'.
+        File type '{{.data.Extension}}' cannot be displayed directly. Visit
+        <a href="{{.data.Path}}">this link</a> to see/download your file
+        '{{.data.Name}}'.
       </p>
       {{end}} {{else}}
       <p>Error: File data not available.</p>
       {{end}}
     </div>
-    <footer>
-      {{if .SingleFile}} file uploaded on {{.SingleFile.TimeUploaded}} {{end}}
-    </footer>
+    <footer>{{if .data}}file uploaded on {{.data.ModTimeStr}}{{end}}</footer>
   </body>
 </html>

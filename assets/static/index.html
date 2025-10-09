@@ -8,49 +8,74 @@
       content="Abyss - A minimalist pastebin webserver"
     />
     <title>abyss paste</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link href="/static/style.css" rel="stylesheet" />
   </head>
 
   <body>
-    <h1>abyss paste</h1>
-    <div>
-      <a href="/tree">
-        <button>all uploaded files</button>
-      </a>
-      <a href="/last">
-        <button>last uploaded file</button>
-      </a>
+    <div class="container">
+      <div class="header">
+        <h1>abyss</h1>
+        <div class="nav">
+          <a href="/all">all files</a>
+        </div>
+      </div>
+
+      <form action="/upload" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="expiration">expiration</label>
+          <select name="expiration" id="expiration">
+            <option value="">never</option>
+            <option value="10m">10 minutes</option>
+            <option value="1h">1 hour</option>
+            <option value="1d">1 day</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="password">password</label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="optional"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="custom_name">custom name</label>
+          <input
+            type="text"
+            name="custom_name"
+            id="custom_name"
+            placeholder="optional"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="file">file</label>
+          <input type="file" name="file" id="file" required />
+        </div>
+
+        <div class="form-group">
+          <label for="auth">auth key</label>
+          <input
+            type="password"
+            name="auth"
+            id="auth"
+            placeholder="required"
+            required
+          />
+        </div>
+
+        <div class="submit-group">
+          <button type="submit">upload</button>
+        </div>
+      </form>
+
+      <footer>
+        powered by
+        <a href="https://github.com/jabuxas/abyss" target="_blank">abyss</a>
+      </footer>
     </div>
-
-    <form action="/" method="POST">
-      <div class="expiration-container">
-        <label for="expiration">Expiration:</label>
-        <select name="expiration" id="expiration">
-          <option value="">Never</option>
-          <option value="10m">10 Minutes</option>
-          <option value="1h">1 Hour</option>
-          <option value="1d">1 Day</option>
-        </select>
-      </div>
-      <div class="password-container">
-        <label for="password">Password:</label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          placeholder="Enter password (optional)"
-        />
-      </div>
-      <textarea
-        name="content"
-        placeholder="Enter your content here..."
-      ></textarea>
-      <button type="submit">upload</button>
-    </form>
-
-    <footer>
-      abyss paste - powered by
-      <a href="https://github.com/jabuxas/abyss" target="_blank">abyss</a>
-    </footer>
   </body>
 </html>

@@ -1,0 +1,132 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Courier New", monospace;
+  background-color: #0a0a0a;
+  color: #c0c0c0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+header {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #404040;
+}
+
+.nav-home a {
+  color: #808080;
+  text-decoration: none;
+  border: 1px solid #404040;
+  padding: 6px 14px;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.nav-home a:hover {
+  color: #ffffff;
+  border-color: #808080;
+}
+
+.path {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.content {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+  border: 1px solid #404040;
+  background-color: #0f0f0f;
+  padding: 30px;
+  overflow: auto;
+}
+
+.code-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.code-wrapper pre {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+}
+
+pre {
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #c0c0c0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #404040;
+}
+
+.pdf-embed {
+  width: 100%;
+  height: 80vh;
+  border: none;
+}
+
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  background-color: #000000;
+}
+
+audio {
+  width: 100%;
+  max-width: 500px;
+  display: block;
+  margin: 20px auto;
+}
+
+.content p {
+  color: #c0c0c0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.content a {
+  color: #808080;
+  text-decoration: none;
+  border-bottom: 1px solid #404040;
+  transition: all 0.2s;
+}
+
+.content a:hover {
+  color: #ffffff;
+  border-bottom-color: #808080;
+}
+
+footer {
+  max-width: 1200px;
+  width: 100%;
+  margin: 50px auto 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #404040;
+}

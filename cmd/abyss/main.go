@@ -3,13 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log/slog"
-	"net/http"
 	"os"
+	"time"
 
-	"github.com/jabuxas/abyss/internal/app"
-	"github.com/jabuxas/abyss/internal/config"
-	"github.com/jabuxas/abyss/internal/handler"
+	"github.com/jabuxas/abyss/internal/routing"
+	"github.com/jabuxas/abyss/internal/utils"
 )
 
 var (
@@ -20,64 +18,29 @@ var (
 )
 
 func main() {
-	versionFlag := flag.Bool("version", false, "print version information and exit")
+	versionFlag := flag.Bool("v", false, "print version and build info")
 	flag.Parse()
+
 	if *versionFlag {
-		fmt.Printf("abyss\n")
-		fmt.Printf(" version:   %s\n", version)
-		fmt.Printf(" git commit: %s\n", commit)
-		fmt.Printf(" built on:   %s\n", date)
-		fmt.Printf(" built by:   %s\n", builtBy)
+		fmt.Printf("abyss version: %s\n", version)
+		fmt.Printf("git commit: %s\n", commit)
+		fmt.Printf("build date: %s\n", date)
+		fmt.Printf("built by: %s\n", builtBy)
 		os.Exit(0)
 	}
 
-	cfg, err := config.Load()
-	if err != nil {
-		slog.Error("Failed to load configuration during startup", "error", err)
-		os.Exit(1)
-	}
+	router := routing.GetRouter()
 
-	var logLevel slog.Level
-	if cfg.Debug {
-		logLevel = slog.LevelDebug
-	} else {
-		logLevel = slog.LevelInfo
-	}
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: logLevel,
-	}))
-	slog.SetDefault(logger)
+	go func() {
+		ticker := time.NewTicker(30 * time.Minute)
+		defer ticker.Stop()
 
-	application, err := app.NewApplication(cfg)
-	if err != nil {
-		slog.Error("Failed to initialize application", "error", err)
-		os.Exit(1)
-	}
-	application.Logger = logger
+		utils.CleanupExpiredFiles(routing.CFG.FilesDir)
 
-	httpHandler := handler.NewHandler(application)
+		for range ticker.C {
+			utils.CleanupExpiredFiles(routing.CFG.FilesDir)
+		}
+	}()
 
-	mux := http.NewServeMux()
-	httpHandler.SetupRoutes(mux)
-
-	listenAddr := cfg.Port
-	if len(listenAddr) > 0 && listenAddr[0] != ':' {
-		listenAddr = ":" + listenAddr
-	} else if len(listenAddr) == 0 {
-		listenAddr = ":3235"
-	}
-
-	srv := &http.Server{
-		Addr:         listenAddr,
-		Handler:      mux,
-		IdleTimeout:  cfg.ServerIdleTimeout,
-		ReadTimeout:  cfg.ServerReadTimeout,
-		WriteTimeout: cfg.ServerWriteTimeout,
-	}
-
-	slog.Info("Starting server", "address", srv.Addr)
-	if err := srv.ListenAndServe(); err != nil {
-		slog.Error("Failed to start server", "error", err)
-		os.Exit(1)
-	}
+	router.Run(":3235")
 }
