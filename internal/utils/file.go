@@ -78,12 +78,16 @@ func FormatFileSize(size int64) string {
 	}
 }
 
-func HashedName(filename string) string {
+func HashedName(filename string, hardToGuess bool) string {
 	var hash int
 	for _, char := range time.Now().String() {
 		hash = (hash << 3) - hash + int(char)
 	}
-	return fmt.Sprint(strings.ToUpper(fmt.Sprintf("%x", hash)[0:5]), filepath.Ext(filename))
+	name := fmt.Sprintf("%x", hash)
+	if !hardToGuess {
+		name = filename[0:5]
+	}
+	return fmt.Sprint(strings.ToUpper(name), filepath.Ext(filename))
 }
 
 func init() {

@@ -71,7 +71,8 @@ func uploadFileHandler(c *gin.Context) {
 		return
 	}
 	file, _ := c.FormFile("file")
-	fileName := utils.HashedName(file.Filename)
+	secretName := len(c.Request.Form["secret"]) > 0
+	fileName := utils.HashedName(file.Filename, secretName)
 	savePath := filepath.Join(CFG.FilesDir, fileName)
 
 	c.SaveUploadedFile(file, savePath)
