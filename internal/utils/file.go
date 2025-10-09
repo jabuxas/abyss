@@ -23,7 +23,7 @@ var customStyle *chroma.Style
 func DetectFileType(filename string) string {
 	ext := strings.ToLower(filepath.Ext(filename))
 
-	textExts := []string{".txt", ".md", ".log", ".json", ".xml", ".html", ".css", ".js", ".go", ".py", ".java", ".c", ".cpp", ".h", ".rb", ".rs", ".sh", ".yml", ".yaml", ".ini", ".cfg", ".toml", ".csv", ".tsv", ".tex", ".el", ".php", ".rtf", ".srt", ".sub", ".vtt", ".sql", ".conf", ".bat", ".ps1", ".jsx", ".tsx", ".vue", ".scss", ".sass", ".less", ".pl", ".swift", ".kt", ".kts", ".groovy", ".r", ".lua", ".dockerfile", ".tf", ".diff", ".patch", ".asciidoc", ".rst", ".m", ".mm", ".f", ".f90", ".asm", ".vb", ".org"}
+	textExts := []string{".txt", ".md", ".log", ".json", ".xml", ".html", ".css", ".js", ".go", ".py", ".java", ".c", ".cpp", ".h", ".rb", ".rs", ".sh", ".yml", ".yaml", ".ini", ".cfg", ".toml", ".csv", ".tsv", ".tex", ".el", ".php", ".rtf", ".srt", ".sub", ".vtt", ".sql", ".conf", ".bat", ".ps1", ".jsx", ".tsx", ".vue", ".scss", ".sass", ".less", ".pl", ".swift", ".kt", ".kts", ".groovy", ".r", ".lua", ".dockerfile", ".tf", ".diff", ".patch", ".asciidoc", ".rst", ".m", ".mm", ".f", ".f90", ".asm", ".vb", ".org", ".nix"}
 	if slices.Contains(textExts, ext) {
 		return "text"
 	}
@@ -92,7 +92,6 @@ func HashedName(filename string, hardToGuess bool) string {
 		hash = (hash << 3) - hash + int(char)
 	}
 	name := base62Encode(int(math.Abs(float64(hash))))
-	log.Println("Generated hash:", name)
 	if !hardToGuess {
 		if len(name) > 5 {
 			name = name[0:5]
