@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -71,14 +72,31 @@ func FormatFileSize(size int64) string {
 	}
 }
 
+const base62Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func base62Encode(num int) string {
+	if num == 0 {
+		return string(base62Chars[0])
+	}
+	result := ""
+	for num > 0 {
+		result = string(base62Chars[num%62]) + result
+		num /= 62
+	}
+	return result
+}
+
 func HashedName(filename string, hardToGuess bool) string {
 	var hash int
 	for _, char := range time.Now().String() {
 		hash = (hash << 3) - hash + int(char)
 	}
-	name := fmt.Sprintf("%x", hash)
+	name := base62Encode(int(math.Abs(float64(hash))))
+	log.Println("Generated hash:", name)
 	if !hardToGuess {
-		name = name[0:5]
+		if len(name) > 5 {
+			name = name[0:5]
+		}
 	}
 	return fmt.Sprint(strings.ToUpper(name), filepath.Ext(filename))
 }
