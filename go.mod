@@ -10,7 +10,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.23.1
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/gin-gonic/gin v1.11.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	golang.org/x/crypto v0.47.0
 )
 
